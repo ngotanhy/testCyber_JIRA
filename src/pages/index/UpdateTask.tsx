@@ -7,6 +7,7 @@ import {
   getAllProjectManager,
   getAllStatus,
   getAllTaskType,
+  getProjectByIdApi,
   getProjectByUser,
   Priority,
   project,
@@ -17,10 +18,12 @@ import { getAllUserApi, user } from "../../redux/Reducers/userReducer";
 import { getStoreJSON, http, USER_LOGIN } from "../../utils/setting";
 import { InputNumber } from "antd";
 import TinyMce from "../../components/TinyMce";
+import { useParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../Hooks/HooksRedux";
 
-type CrTask = {
+type UPTask = {
   listUserAsign: [];
+  taskId: string;
   taskName: string;
   description: string;
   statusId: string;
@@ -37,24 +40,28 @@ const { Option } = Select;
 
 type Props = {};
 
-export default function CreateTask({}: Props) {
+export default function UpdateTask({}: Props) {
   const [inputValue, setInputValue] = useState(1);
   const [value, setValue] = useState<string>();
   const [treeData, setTreeData] =
     useState<
       { title: string | number; value: string | number; key: string | number }[]
     >();
-  // const [userAssign,setUserAssign]=useState<{taskId:number}>()
-  // const [projectId,setProjectId]= useState<number>()
+
+  const { projectByUserLogin } = useAppSelector(
+    (state) => state.projectReducer
+  );
+
+  //get taskID
+  const { id } = useParams();
+ 
   const editorRef = useRef<any>(null);
 
   const { status } = useAppSelector((state) => state.projectReducer);
   const { taskType } = useAppSelector((state) => state.projectReducer);
   const { priority } = useAppSelector((state) => state.projectReducer);
   const { userAll } = useAppSelector((state) => state.userReducer);
-  const { projectByUserLogin } = useAppSelector(
-    (state) => state.projectReducer
-  );
+
   const dispatch = useAppDispatch();
 
   const covertListUser = () => {
@@ -75,6 +82,15 @@ export default function CreateTask({}: Props) {
     setTreeData(treeData);
   };
 
+ 
+  //   console.log(newValue);
+  //   for(let userId of newValue){
+  //     //  setUserAssign({
+  //     //     taskId:,
+  //     //     userId:
+  //     //   })
+  //   }
+  //     };
 
   const tProps = {
     treeData,
@@ -87,12 +103,13 @@ export default function CreateTask({}: Props) {
     },
   };
 
-  const onFinish = async (values: CrTask) => {
+  const onFinish = async (values: UPTask) => {
     if (editorRef.current) {
       values.description = editorRef.current.getContent();
     }
     let dataTask = {
       listUserAsign: values.listUserAsign,
+      taskId: Number(id),
       taskName: values.taskName,
       description: values.description,
       statusId: values.statusId,
@@ -105,31 +122,29 @@ export default function CreateTask({}: Props) {
     };
     console.log(dataTask)
     try {
-      let createTask = await http.post("/Project/createTask", dataTask);
-      console.log(createTask);
+      await http.post("/Project/createTask", dataTask);
       alert("task created successfully");
     } catch (e) {
       alert("task failed");
     }
   };
 
-  const getAllDate = async () => {
-    await dispatch(getAllStatus());
-    await dispatch(getALLPriority());
-    await dispatch(getAllTaskType());
-    await dispatch(getAllUserApi());
-  };
   useEffect(() => {
-    getAllDate();
-    dispatch(getProjectByUser(getStoreJSON(USER_LOGIN).content.id));
+      dispatch(getAllProjectManager());
+      dispatch(getAllStatus());
+      dispatch(getALLPriority());
+      dispatch(getAllTaskType());
+      dispatch(getAllUserApi());
+      dispatch(getProjectByUser(getStoreJSON(USER_LOGIN).content.id));
     if (userAll) {
       covertListUser();
     }
+    // dispatch(getProjectByIdApi(11724))
   }, []);
 
   return (
     <div className=" h-[600px] overflow-y-auto">
-      <h2 className="text-3xl font-semibold">Create Task</h2>
+      <h2 className="text-3xl font-semibold">Update Task</h2>
       <div className="ml-2 ">
         <Form
           name="vertical"

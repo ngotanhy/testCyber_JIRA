@@ -3,11 +3,11 @@ import { getStoreJSON, http, USER_LOGIN } from "../../utils/setting";
 import { AppDispatch } from "../configStore";
 
 export interface user {
-  id: string
-  passWord: string
-  email: string
-  name: string
-  phoneNumber: string
+  avatar: string;
+  email: string;
+  name: string;
+  phoneNumber: string;
+  userId: number;
 }
 
 export interface userRegister{
@@ -59,6 +59,8 @@ export const getAllUserApi=()=>{
    return async(dispatch: AppDispatch)=>{
     let result = await http.get("/Users/getUser");
     let listUser = result.data.content;
+    // console.log(listUser)
+
     const action = getAllUser(listUser);
     dispatch(action);
    }

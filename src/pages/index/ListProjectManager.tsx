@@ -8,9 +8,13 @@ import { toast } from "react-toastify";
 import { toastOptionsErr, toastOptionsSuccess } from "../../App";
 import { useNavigate } from "react-router-dom";
 import { AiOutlinePlus } from "react-icons/ai";
-import { user } from "../../redux/Reducers/userReducer";
-import { useAppDispatch, useAppSelector } from "../../Hooks/HooksRedux";
+import {
+  getAllUser,
+  getAllUserApi,
+  user,
+} from "../../redux/Reducers/userReducer";
 import { getAllProjectManager } from "../../redux/Reducers/projectReducer";
+import { useAppDispatch, useAppSelector } from "../../Hooks/HooksRedux";
 
 interface project {
   members: {
@@ -40,15 +44,14 @@ type Member = {
 type Props = {};
 
 export default function ListProjectManager({}: Props) {
-  const dispatch=useAppDispatch()
-  const {arrProject} =useAppSelector((state)=>state.projectReducer);
-  
+  const dispatch = useAppDispatch();
+  const { arrProject } = useAppSelector((state) => state.projectReducer);
+  const { userAll } = useAppSelector((state) => state.userReducer);
+
   const [content, setContent] = useState<JSX.Element[]>();
-  const [addUser, setAddUser] = useState<user>();
-  const [allUser, setAllUser] = useState<user[]>();
+
   const { Option } = Select;
   const navigate = useNavigate();
-
   const setContentMember = (id: number) => {
     let findProject = arrProject?.find(
       (project: project) => Number(project.id) == id
@@ -100,16 +103,21 @@ export default function ListProjectManager({}: Props) {
       projectId: idProject,
       userId: userId,
     };
-    console.log(dataDelete);
-    // let deleteMember = await http.post(
-    //   "/Project/removeUserFromProject",
-    //   dataDelete
-    // );
-    // if (deleteMember) {
-    //   toast.success("deleted user successfully", toastOptionsSuccess);
-    // } else {
-    //   toast.error("deleted user failed", toastOptionsErr);
-    // }
+    try {
+      await http.post("/Project/removeUserFromProject", dataDelete);
+      alert("deleted user successfully");
+    } catch (e) {
+      alert("deleted user failed");
+    }
+  };
+
+  const deleteProject = async (id: string | number) => {
+    try {
+      await http.delete(`/Project/deleteProject?projectId=${id}`);
+      alert("deleted project successfully");
+    } catch (e) {
+      alert("you cannot delete project");
+    }
   };
 
   const columns: ColumnsType<project> = [
@@ -175,14 +183,26 @@ export default function ListProjectManager({}: Props) {
               placement="bottom"
               content={
                 <>
-                  <Select className="w-full" onChange={(value)=>{
-                    console.log(value)
-                  }}>
-                    {allUser?.map((item: user) => {
+                  <Select
+                    className="w-full"
+                    onChange={async (value) => {
+                      let data = {
+                        projectId: id,
+                        userId: value,
+                      };
+                      try {
+                        await http.post(`/Project/assignUserProject`, data);
+                        alert("add user success");
+                      } catch (e) {
+                        alert("add user failed project not you");
+                      }
+                    }}
+                  >
+                    {userAll?.map((item: user) => {
                       return (
                         <Option
-                          value={item.name}
-                          key={item.id}
+                          value={item.userId}
+                          key={item.userId}
                           className="mt-1 "
                         >
                           {item.name}
@@ -216,28 +236,31 @@ export default function ListProjectManager({}: Props) {
       key: "action",
       render: (_, record) => (
         <Space size="middle">
-          <a>Invite</a>
-          <a>Delete</a>
+          <a
+            onClick={() => {
+              navigate(`/updateProject/${record.id}`);
+            }}
+          >
+            Update
+          </a>
+          <a
+            onClick={() => {
+              deleteProject(record.id);
+            }}
+          >
+            Delete
+          </a>
         </Space>
       ),
     },
   ];
 
 
-  // const getAllUser = async () => {
-  //   let allUser = await http.get(`/Users/getUser?Keyword=${name}`);
-  //   if (allUser) {
-  //     setAllUser(allUser.data.content);
-  //   } else {
-  //     alert("please select task of your project");
-  //   }
-  // };
-
   useEffect(() => {
     let userLogin = getStoreJSON(USER_LOGIN);
     if (userLogin) {
       dispatch(getAllProjectManager());
-      // getAllUser();
+      dispatch(getAllUserApi());
     } else {
       navigate("/login");
     }

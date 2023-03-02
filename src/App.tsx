@@ -1,6 +1,6 @@
-import React, { lazy, Suspense } from "react";
+import React, { lazy, Suspense, useEffect, useState } from "react";
 
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 
 //cai history npm install --save history
 import { unstable_HistoryRouter as HistoryRouter } from "react-router-dom";
@@ -18,6 +18,8 @@ import "react-toastify/dist/ReactToastify.css";
 import "../src/assets/scss/style.scss";
 
 import Loading from "./components/Loading/Loading";
+import { getStoreJSON, USER_LOGIN } from "./utils/setting";
+import {  user, userLogin } from "./redux/Reducers/userReducer";
 
 // ----- Lazy loading --------------------------------
 
@@ -31,6 +33,7 @@ const ListProjectManager = lazy(
   () => import("./pages/index/ListProjectManager")
 );
 const CreateTask = lazy(() => import("./pages/index/CreateTask"));
+const UpdateTask = lazy(() => import("./pages/index/UpdateTask"));
 
 type Props = {};
 
@@ -50,6 +53,7 @@ export const toastOptionsSuccess: {} = {
 };
 
 export default function App({}: Props) {
+  
   return (
     <>
       <Suspense fallback={<Loading />}>
@@ -59,9 +63,12 @@ export default function App({}: Props) {
             <Route path="/" element={<DashBoard />}>
               {/* <Route path="DashBoardInfor" element={<DashBoardInfor />} /> */}
               <Route path="/createProject" element={<CreateProject />} />
-              <Route path="/updateProject" element={<UpdateProject />} />
+              <Route path="/updateProject">
+                <Route path=":id" element={<UpdateProject />} />
+              </Route>
               <Route path="/listProject" element={<ListProjectManager />} />
               <Route path="/createTask" element={<CreateTask />} />
+              <Route path="/updateTask" element={<UpdateTask />} />
             </Route>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />

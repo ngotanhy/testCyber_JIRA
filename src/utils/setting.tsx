@@ -17,11 +17,13 @@ export const configs = {
   },
   getStoreJSON: (name: string) => {
     if (localStorage.getItem(name)) {
-      let value: any = localStorage.getItem(name);
-      let content = JSON.parse(value);
-      return content;
+      const dataStore: string | undefined | null = localStorage.getItem(name);
+      if (typeof dataStore == "string") {
+        const data = JSON.parse(dataStore);
+        return data;
+      }
     }
-    return null;
+    return;
   },
 
   clearLocalStorage: (name: string) => {
@@ -29,7 +31,7 @@ export const configs = {
   },
   ACCESS_TOKEN: "accessToken",
   USER_LOGIN: "userLogin",
-  CURRENT_USER:"currentUser",
+  CURRENT_USER: "currentUser",
 };
 
 export const {
@@ -40,7 +42,7 @@ export const {
   getStore,
   setStoreJSON,
   getStoreJSON,
-  clearLocalStorage
+  clearLocalStorage,
 } = configs;
 
 export const TOKEN_CYBERSOFT =
@@ -49,36 +51,35 @@ export const TOKEN_CYBERSOFT =
 //Cấu hình interceptor {Cấu hình cho các request và response}
 export const http = axios.create({
   baseURL: `https://jiranew.cybersoft.edu.vn/api`,
+  headers: {
+    TokenCybersoft: TOKEN_CYBERSOFT,
+    Authorization: getStoreJSON(USER_LOGIN)
+      ? "Bearer" + getStoreJSON(USER_LOGIN)
+      : "",
+  },
   timeout: 6000,
 });
 
 //Cấu hình request
 
 http.interceptors.request.use(
-  (config:AxiosRequestConfig)  => {
-      const token = getStore(ACCESS_TOKEN);
-      if( config.headers){
-          config.headers  = {
-              ['Token']: token,
-              ['tokenCybersoft']: TOKEN_CYBERSOFT
-          }
-      }
-      return config
+  (config: any) => {
+    let Authorization = getStoreJSON(USER_LOGIN)
+      ? "Bearer " + getStoreJSON(ACCESS_TOKEN)
+      : "";
+    let newConfig = {
+      ...config,
+      headers: {
+        ...config.headers,
+        Authorization: Authorization,
+      },
+    };
+    return newConfig;
   },
-  error => {
-      Promise.reject(error)
+  (error) => {
+    Promise.reject(error);
   }
-)
-/*
-    StatusCode: Mã kết quả trả về do backend qui định
-    200(Success): Kết quả trả về thành công
-    201(Created): Tạo giá trị thành công trên server (thường dùng 200)
-    400(Bad Request); Không tồn tại đường dẫn
-    404(Not Found): Không tìm thấy dữ liệu
-    401(UnAuthorize): Không có quyền truy cập vào API
-    403(Forbiden): Token chưa đủ quyền truy cập
-    500(Error in server): Lỗi xảy ra trên server (Nguyên do do FE hoặc BE tùy tình huống)
-*/
+);
 
 // // Cấu hình kết quả trả về
 http.interceptors.response.use(

@@ -3,6 +3,7 @@ import React from "react";
 import { AiFillSetting, AiOutlineMenu } from "react-icons/ai";
 import { BsPlusLg } from "react-icons/bs";
 import { BiSearch } from "react-icons/bi";
+import { GrDocumentUpdate } from "react-icons/gr";
 import { useNavigate } from "react-router-dom";
 import people from "../../assets/img/personIcon.jpg";
 import { useAppDispatch } from "../../Hooks/HooksRedux";
@@ -33,12 +34,12 @@ export default function TapNavleft({}: Props) {
 
   const onClick = (e: { key: any }) => {
     switch (e.key) {
-      case "1":
+      case "0":
         {
           navigate("listProject");
         }
         break;
-      case "2":
+      case "1":
         {
           navigate("createProject");
         }
@@ -48,8 +49,8 @@ export default function TapNavleft({}: Props) {
     }
   };
   const items: MenuItem[] = [
-    getItem("Project Manager", "1", <AiFillSetting />),
-    getItem("Create Project", "2", <AiFillSetting />),
+    getItem("Project Manager", "0", <AiFillSetting />),
+    getItem("Create Project", "1", <AiFillSetting />),
   ];
 
   return (
@@ -67,6 +68,15 @@ export default function TapNavleft({}: Props) {
           >
             <BsPlusLg />
             Create Task
+          </button>
+          <button
+            className="flex gap-1 items-center hover:text-blue-500 mb-2"
+            onClick={() => {
+              navigate("updateTask");
+            }}
+          >
+            <GrDocumentUpdate className="text-white " />
+            Update Task
           </button>
           <button className="flex gap-1 items-center hover:text-blue-500">
             <BiSearch />
@@ -89,7 +99,7 @@ export default function TapNavleft({}: Props) {
         <Menu
           onClick={onClick}
           className=" bg-slate-300 text-black pt-3 w-full "
-          defaultOpenKeys={["1"]}
+          defaultOpenKeys={["0"]}
           mode="inline"
           items={items}
         />
