@@ -1,15 +1,23 @@
-import { Button, Form, Input, Select } from "antd";
+import { Button, Form, Input, Select, Slider } from "antd";
+import { TreeSelect } from "antd";
 
 import React, { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../Hooks/HooksRedux";
 import {
+  getALLPriority,
   getAllProjectManager,
+  getAllStatus,
+  getAllTaskType,
+  Priority,
   project,
+  Status,
+  TaskType,
 } from "../../redux/Reducers/projectReducer";
+import { getAllUserApi, user } from "../../redux/Reducers/userReducer";
 import { http } from "../../utils/setting";
-
+import { InputNumber, Space } from "antd";
 type CrTask = {
-  listUserAsign: { uniqueItems: boolean }[];
+  listUserAsign: [];
   taskName: string;
   description: string;
   statusId: string;
@@ -21,66 +29,81 @@ type CrTask = {
   priorityId: number;
 };
 
-type Status = {
-  statusId: number | string;
-  statusName: string;
-  alias: string;
-  deleted: boolean;
-};
-
-type TaskType={
-   id: number|string,
-   taskType:string
-}
-
-type Priority={
-    priorityId: number|string,
-    priority: string,
-    description: string,
-    deleted: boolean,
-    alias: string
-}
+const { SHOW_PARENT } = TreeSelect;
+const { Option } = Select;
 
 type Props = {};
 
 export default function CreateTask({}: Props) {
-  const [status, setStatus] = useState<Status[]>();
-  const [taskType,setTaskType]=useState<TaskType[]>();
-  const [priority,setPriority]=useState<Priority[]>();
+  const [inputValue, setInputValue] = useState(1);
+  const [value, setValue] = useState<string[]>();
+  // const [treeData, setTreeData] =
+  //   useState<{ title: string; value: string; key: string }[]>();
 
   const { arrProject } = useAppSelector((state) => state.projectReducer);
+  const { status } = useAppSelector((state) => state.projectReducer);
+  const { taskType } = useAppSelector((state) => state.projectReducer);
+  const { priority } = useAppSelector((state) => state.projectReducer);
+  const { userAll } = useAppSelector((state) => state.userReducer);
+
   const dispatch = useAppDispatch();
-  const { Option } = Select;
+
+  // const onChange = (newValue: string[]) => {
+  //   console.log("onChange ", value);
+  //   console.log(newValue);
+  //   // let findTree=
+  //   // setValue(newValue);
+  // };
+
+  // const covertListUser = () => {
+  //   let treeData: { title: string; value: string; key: string }[] = [];
+  //   for (let user of userAll) {
+  //     treeData.push({
+  //       title: user.name,
+  //       value: user.id,
+  //       key: user.id,
+  //     });
+  //   }
+  //   setTreeData(treeData);
+  // };
+
+  const treeData = [
+    {
+      title: "Node1",
+      value: "Node1",
+      key: "1",
+    },
+    {
+      title: "Node2",
+      value: "Node2",
+      key: "2",
+    },
+  ];
+
+  const tProps = {
+    treeData,
+    value,
+    // onChange,
+    treeCheckable: true,
+    showCheckedStrategy: SHOW_PARENT,
+    placeholder: "Please select",
+    style: {
+      width: "100%",
+    },
+  };
+
   const onFinish = (values: any) => {
     console.log("Success:", values);
+    console.log(values["Assignment"]);
   };
-
-  const getStatus = async () => {
-    let result = await http.get("/Status/getAll");
-    if (result) {
-      setStatus(result.data.content);
-    }
-  };
-
-  const getTaskType= async()=>{
-    let result = await http.get("/TaskType/getAll");
-    if (result) {
-      setTaskType(result.data.content);
-    }
-  }
-  const getPriority= async()=>{
-    let result = await http.get("/Priority/getAll");
-    if (result) {
-        setPriority(result.data.content);
-    }
-  }
 
   useEffect(() => {
     if (arrProject.length == 0) {
       dispatch(getAllProjectManager());
-      getStatus();
-      getPriority();
-      getTaskType();
+      dispatch(getAllStatus());
+      dispatch(getALLPriority());
+      dispatch(getAllTaskType());
+      dispatch(getAllUserApi());
     }
   }, []);
 
@@ -97,9 +120,13 @@ export default function CreateTask({}: Props) {
           <Form.Item
             label="Project"
             name="project"
-            rules={[{ message:"Please input Project name!" }]}
+            rules={[{ message: "Please input Project name!" }]}
+            className="formItem"
           >
-            <Select className="w-full" defaultValue={arrProject[0]?.projectName}>
+            <Select
+              className="w-full"
+              defaultValue={arrProject[0]?.projectName}
+            >
               {arrProject?.map((item: project) => {
                 return (
                   <Option
@@ -116,16 +143,18 @@ export default function CreateTask({}: Props) {
 
           <Form.Item
             label="Task Name"
-            name="task"
+            name="taskName"
             rules={[{ message: "Please input task name!" }]}
+            className="formItem"
           >
             <Input className="rounded-sm" />
           </Form.Item>
 
           <Form.Item
             label="Status"
-            name="status"
+            name="statusId"
             rules={[{ message: "Please input Status!" }]}
+            className="formItem"
           >
             <Select className="w-full">
               {status?.map((item: Status) => {
@@ -147,9 +176,9 @@ export default function CreateTask({}: Props) {
               label="Priority"
               name="Priority"
               rules={[{ message: "Please input Priority!" }]}
-              className="w-full"
+              className="w-full  formItem"
             >
-              <Select className="w-full" defaultValue={'High'}>
+              <Select className="w-full">
                 {priority?.map((item: Priority) => {
                   return (
                     <Option
@@ -164,12 +193,11 @@ export default function CreateTask({}: Props) {
               </Select>
             </Form.Item>
             <Form.Item
-             className="w-full"
-              label="Task Type"
+              className="w-full formItem"
+              label="TaskType"
               name="TaskType"
-              rules={[{ message: "Please input Task Type!" }]}
             >
-              <Select className="w-full" defaultValue={'bug'}>
+              <Select className="w-full">
                 {taskType?.map((item: TaskType) => {
                   return (
                     <Option
@@ -184,36 +212,59 @@ export default function CreateTask({}: Props) {
               </Select>
             </Form.Item>
           </div>
-          
-          <div>
-          <Form.Item
-            label="Project"
-            name="project"
-            rules={[{ message:"Please input Project name!" }]}
-          >
-            <Select className="w-full" defaultValue={arrProject[0]?.projectName}>
-              {arrProject?.map((item: project) => {
-                return (
-                  <Option
-                    value={item.projectName}
-                    key={item.id}
-                    className="mt-1 "
-                  >
-                    {item.projectName}
-                  </Option>
-                );
-              })}
-            </Select>
-          </Form.Item>
+
+          <div className="flex justify-center gap-3">
+            <Form.Item
+              label="Assignees"
+              name="Assignees"
+              className="formItem w-full"
+            >
+              <TreeSelect {...tProps} />
+            </Form.Item>
+            <Form.Item
+              label="Time tracking"
+              name="timeTracking"
+              className="w-full formItem"
+            >
+              <Slider
+                min={1}
+                max={20}
+                value={typeof inputValue === "number" ? inputValue : 0}
+              />
+            </Form.Item>
+          </div>
+
+          <div className="flex justify-center gap-3">
+            <Form.Item
+              label="Original Estimate"
+              name="originalEstimate"
+              className="formItem "
+            >
+              <InputNumber min={0} max={100000} defaultValue={0} className='w-full'/>
+            </Form.Item>
+            <Form.Item
+              label="Time Spent"
+              name="timeTrackingSpent"
+              className="formItem "
+            >
+              <InputNumber min={0} max={100000} defaultValue={0}  className='w-full'/>
+            </Form.Item>
+            <Form.Item
+              label="Time Remaining"
+              name="timeTrackingRemaining"
+              className="formItem   "
+            >
+              <InputNumber min={0} max={100000} defaultValue={0}  className='w-full'/>
+            </Form.Item>
           </div>
           <Form.Item
             label="Description"
-            name="Description"
+            name="description"
             rules={[{ message: "Please input your Description!" }]}
           >
             <Input.TextArea />
           </Form.Item>
-          <Form.Item name="Dự án web"></Form.Item>
+
           <Form.Item wrapperCol={{}}>
             <Button
               type="default"

@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { getStoreJSON, http, USER_LOGIN } from "../../utils/setting";
+import { AppDispatch } from "../configStore";
 
 export interface user {
   id: string
@@ -25,10 +26,12 @@ export interface userLogin {
 
 export interface userLoginState {
   userLogin: userLogin | any;
+  userAll:user[];
 }
 
 const initialState: userLoginState = {
   userLogin: getStoreJSON(USER_LOGIN) || null,
+  userAll:[]
 };
 
 const userAdminReducer = createSlice({
@@ -38,12 +41,25 @@ const userAdminReducer = createSlice({
     getUser: (state, action: PayloadAction<user>) => {
       state.userLogin = action.payload;
     },
+    getAllUser:(state,action:PayloadAction<user[]>)=>{
+      state.userAll= action.payload
+    },
   },
 });
 
-export const {
+export const {getAllUser,getUser
 } = userAdminReducer.actions;
 
 export default userAdminReducer.reducer;
 
 //-------action api------------
+
+
+export const getAllUserApi=()=>{
+   return async(dispatch: AppDispatch)=>{
+    let result = await http.get("/Users/getUser");
+    let listUser = result.data.content;
+    const action = getAllUser(listUser);
+    dispatch(action);
+   }
+}
