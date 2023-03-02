@@ -14,26 +14,17 @@ import {
   Status,
   TaskType,
 } from "../../redux/Reducers/projectReducer";
-import { getAllUserApi, user } from "../../redux/Reducers/userReducer";
+import { getAllUserApi } from "../../redux/Reducers/userReducer";
 import { getStoreJSON, http, USER_LOGIN } from "../../utils/setting";
 import { InputNumber } from "antd";
 import TinyMce from "../../components/TinyMce";
 import { useParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../Hooks/HooksRedux";
+import { user } from "../../utils/type/typeUser";
+import { UpdTask } from "../../utils/type/TypeProject";
+import { apiUpdateTask } from "../../utils/api/projectApi";
 
-type UPTask = {
-  listUserAsign: [];
-  taskId: string;
-  taskName: string;
-  description: string;
-  statusId: string;
-  originalEstimate: number;
-  timeTrackingSpent: number;
-  timeTrackingRemaining: number;
-  projectId: number;
-  typeId: number;
-  priorityId: number;
-};
+
 
 const { SHOW_PARENT } = TreeSelect;
 const { Option } = Select;
@@ -53,8 +44,9 @@ export default function UpdateTask({}: Props) {
   );
 
   //get taskID
-  const { id } = useParams();
- 
+  const { createTask } = useAppSelector((state) => state.projectReducer);
+
+  const [userAssign, setUserAssign] = useState<user[]>();
   const editorRef = useRef<any>(null);
 
   const { status } = useAppSelector((state) => state.projectReducer);
@@ -63,15 +55,16 @@ export default function UpdateTask({}: Props) {
   const { userAll } = useAppSelector((state) => state.userReducer);
 
   const dispatch = useAppDispatch();
-
+  
+  //change list user for render
   const covertListUser = () => {
     let treeData: {
       title: string | number;
       value: string | number;
       key: string | number;
     }[] = [];
-    for (let user in userAll) {
-      let userEl = userAll[user];
+    for (let user in userAssign) {
+      let userEl = userAssign[Number(user)];
       treeData.push({
         title: userEl.name,
         value: userEl.userId,
@@ -81,16 +74,6 @@ export default function UpdateTask({}: Props) {
 
     setTreeData(treeData);
   };
-
- 
-  //   console.log(newValue);
-  //   for(let userId of newValue){
-  //     //  setUserAssign({
-  //     //     taskId:,
-  //     //     userId:
-  //     //   })
-  //   }
-  //     };
 
   const tProps = {
     treeData,
@@ -103,39 +86,40 @@ export default function UpdateTask({}: Props) {
     },
   };
 
-  const onFinish = async (values: UPTask) => {
+  const onFinish = async (values: UpdTask) => {
     if (editorRef.current) {
       values.description = editorRef.current.getContent();
     }
-    let dataTask = {
-      listUserAsign: values.listUserAsign,
-      taskId: Number(id),
-      taskName: values.taskName,
-      description: values.description,
-      statusId: values.statusId,
-      originalEstimate: values.originalEstimate,
-      timeTrackingSpent: values.timeTrackingSpent,
-      timeTrackingRemaining: values.timeTrackingRemaining,
-      projectId: values.projectId,
-      typeId: values.typeId,
-      priorityId: values.priorityId,
-    };
-    console.log(dataTask)
+    values.taskId= createTask.taskId.toString()
     try {
-      await http.post("/Project/createTask", dataTask);
-      alert("task created successfully");
+      await apiUpdateTask(values)
+      alert("task created success");
     } catch (e) {
       alert("task failed");
     }
   };
 
+  const getUserByProject = async (idProject: number) => {
+    try {
+      let result = await http.get(
+        `/Users/getUserByProjectId?idProject=${idProject}`
+      );
+      // console.log(result.data.content);
+      await setUserAssign(result.data.content);
+    } catch (e) {}
+  };
+
   useEffect(() => {
-      dispatch(getAllProjectManager());
-      dispatch(getAllStatus());
-      dispatch(getALLPriority());
-      dispatch(getAllTaskType());
-      dispatch(getAllUserApi());
-      dispatch(getProjectByUser(getStoreJSON(USER_LOGIN).content.id));
+    covertListUser();
+  }, [userAssign]);
+
+  useEffect(() => {
+    dispatch(getAllProjectManager());
+    dispatch(getAllStatus());
+    dispatch(getALLPriority());
+    dispatch(getAllTaskType());
+    dispatch(getAllUserApi());
+    dispatch(getProjectByUser(getStoreJSON(USER_LOGIN).content.id));
     if (userAll) {
       covertListUser();
     }
@@ -143,9 +127,9 @@ export default function UpdateTask({}: Props) {
   }, []);
 
   return (
-    <div className=" h-[600px] overflow-y-auto">
+    <div className=" ">
       <h2 className="text-3xl font-semibold">Update Task</h2>
-      <div className="ml-2 ">
+      <div className="ml-2 content-container overflow-y-auto">
         <Form
           name="vertical"
           style={{ maxWidth: 700 }}
@@ -156,7 +140,9 @@ export default function UpdateTask({}: Props) {
             <Select
               className="w-full"
               defaultValue={projectByUserLogin[0]?.projectName}
-              // onChange={(value:number|string)=>{setProjectId(Number(value))}}
+              onChange={(value) => {
+                getUserByProject(Number(value));
+              }}
             >
               {projectByUserLogin?.map((item: project) => {
                 return (

@@ -3,11 +3,10 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { string, object } from "yup";
 import { useDispatch } from "react-redux";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { AppDispatch } from "../../redux/configStore";
 import {
   ACCESS_TOKEN,
-  CURRENT_USER,
   getStoreJSON,
   http,
   setStoreJSON,
@@ -60,7 +59,8 @@ function Login({}: Props) {
 
   useEffect(() => {
     let userLogin = getStoreJSON(USER_LOGIN);
-    if (userLogin) {
+    let accessToken=getStoreJSON(ACCESS_TOKEN)
+    if (userLogin && accessToken) {
       navigate("/");
     }
   }, []);

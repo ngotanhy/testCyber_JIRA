@@ -14,7 +14,8 @@ import { toast, ToastContainer } from "react-toastify";
 import { http, setStoreJSON, USER_LOGIN } from "../../utils/setting";
 
 import backgroundImageRegister from "../../assets/img/banner/anhBienDep.jpg";
-import { userRegister } from "../../redux/Reducers/userReducer";
+import { userRegister } from "../../utils/type/typeUser";
+
 
 type Props = {};
 
@@ -63,7 +64,7 @@ export default function Register({}: Props) {
     if (result.status === 200) {
       await setStoreJSON(USER_LOGIN, result.data);
       toast.success("Đăng kí thành công", toastOptionsSuccess);
-      navigate("/");
+      navigate("/login");
     } else {
       toast.error("Hãy Đăng Kí Lại", toastOptionsErr);
     }

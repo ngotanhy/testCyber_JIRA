@@ -7,45 +7,28 @@ import { useAppDispatch, useAppSelector } from "../../Hooks/HooksRedux";
 import {
   getAllProjectManager,
   getProjectByIdApi,
-  project,
 } from "../../redux/Reducers/projectReducer";
+import {
+  apiGetProjectCategory,
+  apiUpdateProject,
+} from "../../utils/api/projectApi";
 import { http } from "../../utils/setting";
-
-type Category = {
-  id: number | string;
-  projectCategoryName: string;
-};
-
-type updateProject = {
-  id: number;
-  projectName: string;
-  creator: number;
-  description: string;
-  categoryId: string;
-};
+import { Category, UpdProject } from "../../utils/type/TypeProject";
 
 const { Option } = Select;
 type Props = {};
+
 function UpdateProject({}: Props) {
   const editorRef = useRef<any>(null);
   const dispatch = useAppDispatch();
   const { id } = useParams();
+
   const [category, setCategory] = useState<Category[]>();
-  // const [project, setProject] = useState<project>();
   const { arrProject } = useAppSelector((state) => state.projectReducer);
   const { detailProject } = useAppSelector((state) => state.projectReducer);
 
-
-  const [inputProject, setInputProject] = useState<updateProject>({
-    id: 0,
-    projectName: "",
-    creator: 0,
-    description: "",
-    categoryId: "",
-  });
-
   const getCategory = async () => {
-    let category = await http.get("/ProjectCategory");
+    let category = await apiGetProjectCategory();
     if (category.data) {
       setCategory(category.data.content);
     }
@@ -55,43 +38,36 @@ function UpdateProject({}: Props) {
     getCategory();
   }, []);
 
-  const onFinish = async (values: updateProject) => {
+  const onFinish = async (values: UpdProject) => {
     if (editorRef.current) {
       values.description = editorRef.current.getContent();
     }
-    let data = {
-      id: Number(id),
-      projectName: values.projectName,
-      creator: values.creator,
-      description:values.description,
-      categoryId: values.categoryId? values.categoryId: detailProject?.projectCategory.id,
-    };
+    values.id = Number(id);
     try {
-      let createProject = await http.put(`/Project/updateProject?projectId=${id}`, data);
-      if (createProject) {
-        alert("update success");
-      }
+      await apiUpdateProject(values, Number(id));
+      alert("update success");
     } catch (e) {
-      alert("update failure");
+      alert(
+        "update failure, you cannot update project ,because you are not allowed to participate "
+      );
     }
   };
   const getProject = () => {
-    // let pro = arrProject?.find((project: project) => project.id === Number(id));
-    // if (pro) {
-    //   setProject(pro);
-    // }
-    dispatch(getProjectByIdApi(Number(id)))
+    dispatch(getProjectByIdApi(Number(id)));
   };
+
   useEffect(() => {
     if (arrProject.length === 0) {
+      //get all user
       dispatch(getAllProjectManager());
     }
     getProject();
   }, [id]);
+
   return (
     <div className="">
       <h2 className="text-3xl font-semibold bg-white ">Update Project</h2>
-      <div className="ml-2 h-[600px] overflow-y-auto">
+      <div className="ml-2 content-container overflow-y-auto">
         <Form
           name="vertical"
           style={{ maxWidth: 600 }}
@@ -104,12 +80,15 @@ function UpdateProject({}: Props) {
             rules={[{ message: "Please input your name!" }]}
             className="formItem"
           >
-            <Input className="rounded-sm" placeholder={detailProject?.projectName} />
+            <Input
+              className="rounded-sm"
+              placeholder={detailProject?.projectName}
+            />
           </Form.Item>
 
           <Form.Item
             label="Description"
-            name="Description"
+            name="description"
             rules={[{ message: "Please input your Description!" }]}
             className="formItem"
           >

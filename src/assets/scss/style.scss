@@ -41,7 +41,9 @@
     display: block !important;
 }
 
-
+.content-container {
+    height: calc(100vh - 70px);
+  }
 
 .cont {
   width: 100%;

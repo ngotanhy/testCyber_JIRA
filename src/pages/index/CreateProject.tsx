@@ -1,23 +1,10 @@
 import { Button, Form, Input, Select } from "antd";
-
 import React, { useEffect, useRef, useState } from "react";
-import { toast } from "react-toastify";
-import { toastOptionsErr, toastOptionsSuccess } from "../../App";
 import TinyMce from "../../components/TinyMce";
-import { project } from "../../redux/Reducers/projectReducer";
-import { http } from "../../utils/setting";
+import { apiCreateProjectAuthorize, apiGetProjectCategory } from "../../utils/api/projectApi";
+import { Category, CreProject } from "../../utils/type/TypeProject";
 
-type Category = {
-  id: number | string;
-  projectCategoryName: string;
-};
 
-type CreateProject = {
-  projectName: string;
-  description: string;
-  categoryId: number | string;
-  alias: string;
-};
 
 const { Option } = Select;
 
@@ -25,18 +12,10 @@ type Props = {};
 
 const CreateProject = ({}: Props) => {
   const editorRef = useRef<any>(null);
-
   const [category, setCategory] = useState<Category[]>();
 
-  const [inputProject, setInputProject] = useState<CreateProject>({
-    projectName: "",
-    description: "",
-    categoryId: 0,
-    alias: "",
-  });
-
   const getCategory = async () => {
-    let category = await http.get("/ProjectCategory");
+    let category = await apiGetProjectCategory();
     if (category.data) {
       setCategory(category.data.content);
     }
@@ -46,37 +25,26 @@ const CreateProject = ({}: Props) => {
     getCategory();
   }, []);
 
-  const onFinish = async (values: CreateProject) => {
+  const onFinish = async (values: CreProject) => {
     if (editorRef.current) {
       values.description = editorRef.current.getContent();
     }
-    let data = {
-      projectName: values.projectName,
-      description: values.description,
-      categoryId: values.categoryId,
-      alias: values.alias,
-    };
-    if (values) {
-      let createProject = await http.post(
-        "/Project/createProjectAuthorize",
-        data
-      );
-      console.log(createProject)
-      if (createProject?.status==200) {
-        alert('project created successfully')
+    try {
+      if (values.projectName !== " ") {
+        await apiCreateProjectAuthorize(values);
+        alert("project created success");
       } else {
-        alert('project failed')
-
+        alert("input project");
       }
-    }else{
-      alert('require input project')
+    } catch (e) {
+      alert("project failed");
     }
   };
 
   return (
     <div className="">
       <h2 className="text-3xl font-semibold bg-white ">Create Project</h2>
-      <div className="ml-2 h-[600px] overflow-y-auto">
+      <div className="ml-2 content-container overflow-y-auto">
         <Form
           name="vertical"
           style={{ maxWidth: 600 }}
@@ -88,17 +56,19 @@ const CreateProject = ({}: Props) => {
             name="projectName"
             rules={[{ message: "Please input your name!" }]}
             className="formItem"
+            initialValue={" "}
           >
             <Input className="rounded-sm" />
           </Form.Item>
 
           <Form.Item
             label="Description"
-            name="Description"
+            name="description"
             rules={[{ message: "Please input your Description!" }]}
             className="formItem"
+            initialValue={" "}
           >
-            <TinyMce editorRef={editorRef} initialValue={""}/>
+            <TinyMce editorRef={editorRef} initialValue={""} />
           </Form.Item>
           <Form.Item name="categoryId" label="Category" className="formItem ">
             <Select defaultValue="Dự án web" className="w-full">
@@ -116,6 +86,7 @@ const CreateProject = ({}: Props) => {
             name="alias"
             rules={[{ message: "Please input your alias!" }]}
             className="formItem"
+            initialValue={" "}
           >
             <Input className="rounded-sm" size="small" />
           </Form.Item>

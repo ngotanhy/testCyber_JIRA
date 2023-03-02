@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import axios from "axios";
-import { http } from "../../utils/setting";
+import { apiGetAllPriority, apiGetAllProject, apiGetAllStatus, apiGetAllTaskType, apiGetProjectDetail } from "../../utils/api/projectApi";
 import { AppDispatch } from "../configStore";
 
 export type Status = {
@@ -39,20 +38,23 @@ export interface project {
 }
 
 
-export interface ProjectDetail {
-  lstTask: {
-    lstTaskDeTail: [];
-    statusId: number;
-    statusName: string;
-    alias: string;
-  }[];
-  members: {
+interface Members{
     userId: number;
     name: string;
     avatar: string;
-    email: string | null;
-    phoneNumber: string | null;
-  }[];
+    email: string ;
+    phoneNumber: string ;
+}
+interface listTask{
+  lstTaskDeTail: [] ;
+  statusId: number;
+  statusName: string;
+  alias: string;
+}
+
+export interface ProjectDetail {
+  lstTask:listTask[];
+  members:Members [];
   creator: {
     id: number;
     name: string;
@@ -66,6 +68,7 @@ export interface ProjectDetail {
   };
   alias: string;
 }
+
 export interface TaskProject {
   lstTaskDeTail: [];
   statusId: number;
@@ -73,24 +76,56 @@ export interface TaskProject {
   alias: string;
 }
 
-export interface arrProject {
-  arrProject: project[] ;
+export interface CreateTask {
+  taskId: number;
+  taskName: string;
+  alias: string;
+  description: string;
+  statusId: number;
+  originalEstimate: number;
+  timeTrackingSpent: number;
+  timeTrackingRemaining: number;
+  projectId: number;
+  typeId: number;
+  deleted: boolean;
+  reporterId: number;
+  priorityId: number;
+}
+
+interface ProjectState {
+  arrProject: project[];
   status: Status[];
   taskType: TaskType[];
   priority: Priority[];
-  detailProject: ProjectDetail | null;
+  detailProject: ProjectDetail|null;
   taskProject: TaskProject[] | null;
   projectByUserLogin: project[];
+  createTask: CreateTask;
 }
 
-const initialState: arrProject = {
+const initialState: ProjectState = {
   arrProject: [],
   status: [],
   taskType: [],
   priority: [],
-  detailProject: null,
+  detailProject:null,
   taskProject: null,
   projectByUserLogin: [],
+  createTask: {
+    taskId: 0,
+    taskName: "",
+    alias: "",
+    description: "",
+    statusId: 0,
+    originalEstimate: 0,
+    timeTrackingSpent: 0,
+    timeTrackingRemaining: 0,
+    projectId: 0,
+    typeId: 0,
+    deleted: false,
+    reporterId: 0,
+    priorityId: 0,
+  },
 };
 
 const projectReducer = createSlice({
@@ -99,6 +134,11 @@ const projectReducer = createSlice({
   reducers: {
     getAllProject: (state, action: PayloadAction<project[]>) => {
       state.arrProject = action.payload;
+    },
+
+    setAllProject:(state,action:PayloadAction<number>)=>{
+        let newArr= state.arrProject.filter((pro:project)=>pro.id!==action.payload);
+        state.arrProject=[...newArr];
     },
 
     getStatus: (state, action: PayloadAction<Status[]>) => {
@@ -122,14 +162,16 @@ const projectReducer = createSlice({
     },
 
     getProjectByUser: (state, action: PayloadAction<project[]>) => {
-      // console.log(action.payload)
-      let listProject:project[]= state.arrProject?.filter((project:project)=>
-         project.creator.id === Number(action.payload)
-      )
-      let newList=[...listProject];
-      state.projectByUserLogin=newList;
-      // state.taskProject = action.payload;
+      let listProject: project[] = state.arrProject?.filter(
+        (project: project) => project.creator.id === Number(action.payload)
+      );
+      let newList = [...listProject];
+      state.projectByUserLogin = newList;
     },
+
+    getCreateTask: (state,action:PayloadAction<CreateTask>)=>{
+      state.createTask=action.payload
+    }
   },
 });
 
@@ -140,7 +182,9 @@ export const {
   getPriority,
   getProjectById,
   getTaskProjectId,
-  getProjectByUser
+  getProjectByUser,
+  getCreateTask,
+  setAllProject,
 } = projectReducer.actions;
 
 export default projectReducer.reducer;
@@ -149,7 +193,7 @@ export default projectReducer.reducer;
 
 export const getAllProjectManager = () => {
   return async (dispatch: AppDispatch) => {
-    const result = await http.get("/Project/getAllProject");
+    const result = await apiGetAllProject();
     let listProject = result.data.content;
     const action = getAllProject(listProject);
     dispatch(action);
@@ -158,16 +202,16 @@ export const getAllProjectManager = () => {
 
 export const getAllStatus = () => {
   return async (dispatch: AppDispatch) => {
-    let result = await http.get("/Status/getAll");
+    let result = await apiGetAllStatus();
     let listStatus = result.data.content;
     const action = getStatus(listStatus);
     dispatch(action);
   };
 };
 
-export const getProjectByIdApi = (id: string | number) => {
+export const getProjectByIdApi = (id: number) => {
   return async (dispatch: AppDispatch) => {
-    let result = await http.get(`/Project/getProjectDetail?id=${id}`);
+    let result = await apiGetProjectDetail(id);
     let project: ProjectDetail = result.data.content;
     dispatch(getTaskProjectId(project.lstTask));
     const action = getProjectById(project);
@@ -177,7 +221,7 @@ export const getProjectByIdApi = (id: string | number) => {
 
 export const getAllTaskType = () => {
   return async (dispatch: AppDispatch) => {
-    let result = await http.get("/TaskType/getAll");
+    let result = await apiGetAllTaskType();
     let listTask = result.data.content;
     const action = getTaskType(listTask);
     dispatch(action);
@@ -186,7 +230,7 @@ export const getAllTaskType = () => {
 
 export const getALLPriority = () => {
   return async (dispatch: AppDispatch) => {
-    let result = await http.get("/Priority/getAll");
+    let result = await apiGetAllPriority();
     let listPriority = result.data.content;
     const action = getPriority(listPriority);
     dispatch(action);

@@ -1,36 +1,29 @@
-import { Button, Descriptions, Form, Input, Select, Slider } from "antd";
+import { Button, Form, Input, Select, Slider } from "antd";
 import { TreeSelect } from "antd";
 
 import React, { useEffect, useRef, useState } from "react";
 import {
   getALLPriority,
-  getAllProjectManager,
   getAllStatus,
   getAllTaskType,
+  getCreateTask,
   getProjectByUser,
   Priority,
   project,
   Status,
   TaskType,
 } from "../../redux/Reducers/projectReducer";
-import { getAllUserApi, user } from "../../redux/Reducers/userReducer";
+import { getAllUserApi } from "../../redux/Reducers/userReducer";
 import { getStoreJSON, http, USER_LOGIN } from "../../utils/setting";
 import { InputNumber } from "antd";
 import TinyMce from "../../components/TinyMce";
 import { useAppDispatch, useAppSelector } from "../../Hooks/HooksRedux";
+import { useNavigate } from "react-router-dom";
+import { user } from "../../utils/type/typeUser";
+import { CreTask } from "../../utils/type/TypeProject";
+import { apiGetUserByProjectId } from "../../utils/api/userApi";
+import { apiCreateTask } from "../../utils/api/projectApi";
 
-type CrTask = {
-  listUserAsign: [];
-  taskName: string;
-  description: string;
-  statusId: string;
-  originalEstimate: number;
-  timeTrackingSpent: number;
-  timeTrackingRemaining: number;
-  projectId: number;
-  typeId: number;
-  priorityId: number;
-};
 
 const { SHOW_PARENT } = TreeSelect;
 const { Option } = Select;
@@ -38,20 +31,19 @@ const { Option } = Select;
 type Props = {};
 
 export default function CreateTask({}: Props) {
+  const navigate = useNavigate();
   const [inputValue, setInputValue] = useState(1);
   const [value, setValue] = useState<string>();
   const [treeData, setTreeData] =
     useState<
       { title: string | number; value: string | number; key: string | number }[]
     >();
-  // const [userAssign,setUserAssign]=useState<{taskId:number}>()
-  // const [projectId,setProjectId]= useState<number>()
+  const [userAssign, setUserAssign] = useState<user[]>();
   const editorRef = useRef<any>(null);
 
   const { status } = useAppSelector((state) => state.projectReducer);
   const { taskType } = useAppSelector((state) => state.projectReducer);
   const { priority } = useAppSelector((state) => state.projectReducer);
-  const { userAll } = useAppSelector((state) => state.userReducer);
   const { projectByUserLogin } = useAppSelector(
     (state) => state.projectReducer
   );
@@ -63,8 +55,8 @@ export default function CreateTask({}: Props) {
       value: string | number;
       key: string | number;
     }[] = [];
-    for (let user in userAll) {
-      let userEl = userAll[user];
+    for (let user in userAssign) {
+      let userEl = userAssign[Number(user)];
       treeData.push({
         title: userEl.name,
         value: userEl.userId,
@@ -74,7 +66,6 @@ export default function CreateTask({}: Props) {
 
     setTreeData(treeData);
   };
-
 
   const tProps = {
     treeData,
@@ -87,29 +78,23 @@ export default function CreateTask({}: Props) {
     },
   };
 
-  const onFinish = async (values: CrTask) => {
+  const onFinish = async (values: CreTask) => {
     if (editorRef.current) {
       values.description = editorRef.current.getContent();
     }
-    let dataTask = {
-      listUserAsign: values.listUserAsign,
-      taskName: values.taskName,
-      description: values.description,
-      statusId: values.statusId,
-      originalEstimate: values.originalEstimate,
-      timeTrackingSpent: values.timeTrackingSpent,
-      timeTrackingRemaining: values.timeTrackingRemaining,
-      projectId: values.projectId,
-      typeId: values.typeId,
-      priorityId: values.priorityId,
-    };
-    console.log(dataTask)
     try {
-      let createTask = await http.post("/Project/createTask", dataTask);
-      console.log(createTask);
+      let createTask = await apiCreateTask(values);
+      await dispatch(getCreateTask(createTask.data.content));
+      //create Task success => create user for task
+      for (let u in values.listUserAsign) {
+        await http.post("/Project/assignUserTask", {
+          taskId: createTask.data.content.taskId,
+          userId: values.listUserAsign[u],
+        });
+      }
       alert("task created successfully");
     } catch (e) {
-      alert("task failed");
+      alert("task failed , you can change task name");
     }
   };
 
@@ -119,18 +104,32 @@ export default function CreateTask({}: Props) {
     await dispatch(getAllTaskType());
     await dispatch(getAllUserApi());
   };
+
+  const getUserByProject = async (idProject: number) => {
+    try {
+      let result = await apiGetUserByProjectId(idProject)
+      // console.log(result.data.content);
+      await setUserAssign(result.data.content);
+    } catch (e) {}
+  };
+
   useEffect(() => {
-    getAllDate();
-    dispatch(getProjectByUser(getStoreJSON(USER_LOGIN).content.id));
-    if (userAll) {
-      covertListUser();
+    covertListUser();
+  }, [userAssign]);
+
+  useEffect(() => {
+    if (getStoreJSON(USER_LOGIN)) {
+      getAllDate();
+      dispatch(getProjectByUser(getStoreJSON(USER_LOGIN).content.id));
+    } else {
+      navigate("/");
     }
   }, []);
 
   return (
-    <div className=" h-[600px] overflow-y-auto">
+    <div className=" ">
       <h2 className="text-3xl font-semibold">Create Task</h2>
-      <div className="ml-2 ">
+      <div className="ml-2 content-container overflow-y-auto">
         <Form
           name="vertical"
           style={{ maxWidth: 700 }}
@@ -140,8 +139,17 @@ export default function CreateTask({}: Props) {
           <Form.Item label="Project" name="projectId" className="formItem">
             <Select
               className="w-full"
-              defaultValue={projectByUserLogin[0]?.projectName}
-              // onChange={(value:number|string)=>{setProjectId(Number(value))}}
+              defaultValue={"Project"}
+              onChange={(value) => {
+                if (value) {
+                  getUserByProject(Number(value));
+                }
+              }}
+              onFocus={() => {
+                if (projectByUserLogin.length == 0) {
+                  alert("please create project for you");
+                }
+              }}
             >
               {projectByUserLogin?.map((item: project) => {
                 return (
@@ -158,6 +166,7 @@ export default function CreateTask({}: Props) {
             name="taskName"
             rules={[{ message: "Please input task name!" }]}
             className="formItem"
+            initialValue={""}
           >
             <Input className="rounded-sm" />
           </Form.Item>
@@ -167,6 +176,7 @@ export default function CreateTask({}: Props) {
             name="statusId"
             rules={[{ message: "Please input Status!" }]}
             className="formItem"
+            initialValue={" "}
           >
             <Select className="w-full">
               {status?.map((item: Status) => {
@@ -188,6 +198,7 @@ export default function CreateTask({}: Props) {
               label="Priority"
               name="priorityId"
               className="w-full  formItem"
+              initialValue={" "}
             >
               <Select className="w-full">
                 {priority?.map((item: Priority) => {
@@ -207,6 +218,7 @@ export default function CreateTask({}: Props) {
               className="w-full formItem"
               label="TaskType"
               name="typeId"
+              initialValue={" "}
             >
               <Select className="w-full">
                 {taskType?.map((item: TaskType) => {
@@ -232,6 +244,7 @@ export default function CreateTask({}: Props) {
               label="Time tracking"
               name="timeTracking"
               className="w-full formItem"
+              initialValue={0}
             >
               <Slider
                 min={1}
@@ -246,6 +259,7 @@ export default function CreateTask({}: Props) {
               label="Original Estimate"
               name="originalEstimate"
               className="formItem "
+              initialValue={0}
             >
               <InputNumber
                 min={0}
@@ -258,6 +272,7 @@ export default function CreateTask({}: Props) {
               label="Time Spent"
               name="timeTrackingSpent"
               className="formItem "
+              initialValue={0}
             >
               <InputNumber
                 min={0}
@@ -269,7 +284,8 @@ export default function CreateTask({}: Props) {
             <Form.Item
               label="Time Remaining"
               name="timeTrackingRemaining"
-              className="formItem   "
+              className="formItem"
+              initialValue={0}
             >
               <InputNumber
                 min={0}

@@ -1,45 +1,20 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { TiDelete } from "react-icons/ti";
-
-import { Button, Popover, Select, Space, Table, Tag } from "antd";
+import { Popover, Select, Space, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { getStoreJSON, http, USER_LOGIN } from "../../utils/setting";
-import { toast } from "react-toastify";
-import { toastOptionsErr, toastOptionsSuccess } from "../../App";
 import { useNavigate } from "react-router-dom";
 import { AiOutlinePlus } from "react-icons/ai";
+import { getAllUserApi } from "../../redux/Reducers/userReducer";
 import {
-  getAllUser,
-  getAllUserApi,
-  user,
-} from "../../redux/Reducers/userReducer";
-import { getAllProjectManager } from "../../redux/Reducers/projectReducer";
+  getAllProjectManager,
+  setAllProject,
+} from "../../redux/Reducers/projectReducer";
 import { useAppDispatch, useAppSelector } from "../../Hooks/HooksRedux";
-
-interface project {
-  members: {
-    avatar: string;
-    name: string;
-    userId: number | string;
-  }[];
-  creator: {
-    id: number;
-    name: string;
-  };
-  id: number;
-  projectName: string;
-  description: string;
-  categoryId: number;
-  categoryName: string;
-  alias: string;
-  deleted: boolean;
-}
-
-type Member = {
-  avatar: string;
-  name: string;
-  userId: number | string;
-};
+import { user } from "../../utils/type/typeUser";
+import { Member, project } from "../../utils/type/TypeProject";
+import { apiRemoveUserFromProject } from "../../utils/api/userApi";
+import { apiDeleteProject } from "../../utils/api/projectApi";
 
 type Props = {};
 
@@ -49,9 +24,10 @@ export default function ListProjectManager({}: Props) {
   const { userAll } = useAppSelector((state) => state.userReducer);
 
   const [content, setContent] = useState<JSX.Element[]>();
-
+  // const [userInProject, setUserInProject] = useState<Member[]>();
   const { Option } = Select;
   const navigate = useNavigate();
+
   const setContentMember = (id: number) => {
     let findProject = arrProject?.find(
       (project: project) => Number(project.id) == id
@@ -104,20 +80,57 @@ export default function ListProjectManager({}: Props) {
       userId: userId,
     };
     try {
-      await http.post("/Project/removeUserFromProject", dataDelete);
-      alert("deleted user successfully");
+      if (dataDelete) {
+        await apiRemoveUserFromProject(dataDelete);
+        alert("deleted user success");
+      }
     } catch (e) {
       alert("deleted user failed");
     }
   };
 
-  const deleteProject = async (id: string | number) => {
+  const deleteProject = async (id: number) => {
     try {
-      await http.delete(`/Project/deleteProject?projectId=${id}`);
-      alert("deleted project successfully");
+      await apiDeleteProject(id);
+      alert("deleted project success");
+      await dispatch(setAllProject(id));
     } catch (e) {
-      alert("you cannot delete project");
+      alert(
+        "you cannot delete project,because you are not allowed to participate"
+      );
     }
+  };
+
+  const render = (members: Member[], id: number) => {
+    return (
+      <Popover
+        placement="bottom"
+        content={content}
+        className="flex"
+        title={
+          <>
+            <span>Member</span>
+          </>
+        }
+        onOpenChange={() => {
+          setContentMember(id);
+        }}
+      >
+        {members?.map((member) => {
+          return (
+            <div>
+              <div className=" w-7 h-7 mr-1 relative">
+                <img
+                  src={member.avatar}
+                  alt=""
+                  className="w-7 h-7 absolute rounded-full top-0 left-0 inline"
+                />
+              </div>
+            </div>
+          );
+        })}
+      </Popover>
+    );
   };
 
   const columns: ColumnsType<project> = [
@@ -152,33 +165,7 @@ export default function ListProjectManager({}: Props) {
       render: (_, { members, id }) => (
         <>
           <div className="flex">
-            <Popover
-              placement="bottom"
-              content={content}
-              className="flex"
-              title={
-                <>
-                  <span>Member</span>
-                </>
-              }
-              onOpenChange={() => {
-                setContentMember(id);
-              }}
-            >
-              {members.map((member) => {
-                return (
-                  <div>
-                    <div className=" w-7 h-7 mr-1 relative">
-                      <img
-                        src={member.avatar}
-                        alt=""
-                        className="w-7 h-7 absolute rounded-full top-0 left-0 inline"
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </Popover>
+            {render(members, id)}
             <Popover
               placement="bottom"
               content={
@@ -194,7 +181,7 @@ export default function ListProjectManager({}: Props) {
                         await http.post(`/Project/assignUserProject`, data);
                         alert("add user success");
                       } catch (e) {
-                        alert("add user failed project not you");
+                        alert("add user failed, project not for you");
                       }
                     }}
                   >
@@ -255,10 +242,8 @@ export default function ListProjectManager({}: Props) {
     },
   ];
 
-
   useEffect(() => {
-    let userLogin = getStoreJSON(USER_LOGIN);
-    if (userLogin) {
+    if (getStoreJSON(USER_LOGIN)) {
       dispatch(getAllProjectManager());
       dispatch(getAllUserApi());
     } else {
@@ -269,7 +254,7 @@ export default function ListProjectManager({}: Props) {
   return (
     <div className="">
       <h1 className="text-3xl font-semibold">Project Manager</h1>
-      <div className="h-[600px] overflow-y-auto">
+      <div className="content-container overflow-y-auto">
         <Table columns={columns} dataSource={arrProject} />
       </div>
     </div>

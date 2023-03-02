@@ -11,8 +11,12 @@ export default defineConfig({
   server: {
     host: true,
     open: false,
+    // origin: 'http://127.0.0.1:8080',
   },
   define: {
     // "global": {},
   },
+ 
 })
+
+

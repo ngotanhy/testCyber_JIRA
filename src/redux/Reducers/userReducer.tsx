@@ -1,37 +1,19 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { apiGetAllUser } from "../../utils/api/userApi";
 import { getStoreJSON, http, USER_LOGIN } from "../../utils/setting";
+import { user, userLogin } from "../../utils/type/typeUser";
 import { AppDispatch } from "../configStore";
 
-export interface user {
-  avatar: string;
-  email: string;
-  name: string;
-  phoneNumber: string;
-  userId: number;
-}
-
-export interface userRegister{
-  email: string,
-  passWord: string,
-  name: string,
-  phoneNumber: string
-}
-
-
-export interface userLogin {
-  email: string
-  passWord: string
-}
-
-
-export interface userLoginState {
+export interface userState {
   userLogin: userLogin | any;
   userAll:user[];
+  userInTask:user[]
 }
 
-const initialState: userLoginState = {
+const initialState: userState = {
   userLogin: getStoreJSON(USER_LOGIN) || null,
-  userAll:[]
+  userAll:[],
+  userInTask:[]
 };
 
 const userAdminReducer = createSlice({
@@ -44,6 +26,9 @@ const userAdminReducer = createSlice({
     getAllUser:(state,action:PayloadAction<user[]>)=>{
       state.userAll= action.payload
     },
+    getUserInTask:(state,action :PayloadAction<user[]>)=>{
+       
+    }
   },
 });
 
@@ -57,10 +42,9 @@ export default userAdminReducer.reducer;
 
 export const getAllUserApi=()=>{
    return async(dispatch: AppDispatch)=>{
-    let result = await http.get("/Users/getUser");
+    let result = await apiGetAllUser();
     let listUser = result.data.content;
     // console.log(listUser)
-
     const action = getAllUser(listUser);
     dispatch(action);
    }
