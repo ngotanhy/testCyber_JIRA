@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { TiDelete } from "react-icons/ti";
 import { Popover, Select, Space, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { getStoreJSON, http, USER_LOGIN } from "../../utils/setting";
+import { getStoreJSON, USER_LOGIN } from "../../utils/setting";
 import { useNavigate } from "react-router-dom";
 import { AiOutlinePlus } from "react-icons/ai";
 import { getAllUserApi } from "../../redux/Reducers/userReducer";
@@ -11,9 +11,12 @@ import {
   setAllProject,
 } from "../../redux/Reducers/projectReducer";
 import { useAppDispatch, useAppSelector } from "../../Hooks/HooksRedux";
-import { user } from "../../utils/type/typeUser";
+import { user } from "../../utils/type/TypeUser";
 import { Member, project } from "../../utils/type/TypeProject";
-import { apiRemoveUserFromProject } from "../../utils/api/userApi";
+import {
+  apiAssignUserProject,
+  apiRemoveUserFromProject,
+} from "../../utils/api/userApi";
 import { apiDeleteProject } from "../../utils/api/projectApi";
 
 type Props = {};
@@ -24,7 +27,6 @@ export default function ListProjectManager({}: Props) {
   const { userAll } = useAppSelector((state) => state.userReducer);
 
   const [content, setContent] = useState<JSX.Element[]>();
-  // const [userInProject, setUserInProject] = useState<Member[]>();
   const { Option } = Select;
   const navigate = useNavigate();
 
@@ -83,6 +85,7 @@ export default function ListProjectManager({}: Props) {
       if (dataDelete) {
         await apiRemoveUserFromProject(dataDelete);
         alert("deleted user success");
+        dispatch(getAllProjectManager());
       }
     } catch (e) {
       alert("deleted user failed");
@@ -99,38 +102,6 @@ export default function ListProjectManager({}: Props) {
         "you cannot delete project,because you are not allowed to participate"
       );
     }
-  };
-
-  const render = (members: Member[], id: number) => {
-    return (
-      <Popover
-        placement="bottom"
-        content={content}
-        className="flex"
-        title={
-          <>
-            <span>Member</span>
-          </>
-        }
-        onOpenChange={() => {
-          setContentMember(id);
-        }}
-      >
-        {members?.map((member) => {
-          return (
-            <div>
-              <div className=" w-7 h-7 mr-1 relative">
-                <img
-                  src={member.avatar}
-                  alt=""
-                  className="w-7 h-7 absolute rounded-full top-0 left-0 inline"
-                />
-              </div>
-            </div>
-          );
-        })}
-      </Popover>
-    );
   };
 
   const columns: ColumnsType<project> = [
@@ -165,7 +136,33 @@ export default function ListProjectManager({}: Props) {
       render: (_, { members, id }) => (
         <>
           <div className="flex">
-            {render(members, id)}
+          <Popover
+        placement="bottom"
+        content={content}
+        className="flex"
+        title={
+          <>
+            <span>Member</span>
+          </>
+        }
+        onOpenChange={() => {
+          setContentMember(id);
+        }}
+      >
+        {members?.map((member) => {
+          return (
+            <div>
+              <div className=" w-7 h-7 mr-1 relative">
+                <img
+                  src={member.avatar}
+                  alt=""
+                  className="w-7 h-7 absolute rounded-full top-0 left-0 inline"
+                />
+              </div>
+            </div>
+          );
+        })}
+      </Popover>
             <Popover
               placement="bottom"
               content={
@@ -178,8 +175,9 @@ export default function ListProjectManager({}: Props) {
                         userId: value,
                       };
                       try {
-                        await http.post(`/Project/assignUserProject`, data);
+                        await apiAssignUserProject(data);
                         alert("add user success");
+                        dispatch(getAllProjectManager());
                       } catch (e) {
                         alert("add user failed, project not for you");
                       }

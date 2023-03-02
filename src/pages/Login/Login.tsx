@@ -2,9 +2,7 @@ import React, { memo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { string, object } from "yup";
-import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { AppDispatch } from "../../redux/configStore";
 import {
   ACCESS_TOKEN,
   getStoreJSON,
@@ -19,18 +17,9 @@ interface userLogin {
   password: string;
 }
 
-interface user{
-  id: number|string,
-  email: string,
-  avatar: string,
-  name: string,
-  accessToken: string
-}
-
 type Props = {};
 
 function Login({}: Props) {
-  const dispatch: AppDispatch = useDispatch();
   const navigate = useNavigate();
 
   const schema = object({
@@ -49,7 +38,6 @@ function Login({}: Props) {
 
   const onSubmit = handleSubmit(async (values: userLogin) => {
     let userLogin = await http.post("/Users/signin", values);
-    console.log(userLogin.data.content)
     await setStoreJSON(USER_LOGIN, userLogin.data);
     await setStoreJSON(ACCESS_TOKEN,userLogin.data.content.accessToken)
     if (userLogin) {
@@ -67,20 +55,6 @@ function Login({}: Props) {
 
   return (
     <form onSubmit={onSubmit} className="cont">
-      <div
-        style={{
-          position: "absolute",
-          top: "20px",
-          left: "2%",
-          padding: "9px 12px",
-        }}
-        onClick={() => {
-          navigate("/");
-        }}
-        className="text-lg cursor-pointer transition-all hover:-translate-y-2 text-white font-medium rounded-full bg-primary"
-      >
-        Trang chủ
-      </div>
       <div className="demo">
         <div className="login">
           <div className="login__check" />
@@ -122,7 +96,7 @@ function Login({}: Props) {
             </button>
             <p className="login__signup">
               Vui lòng đăng kí? &nbsp;
-              <a onClick={() => navigate("/register")}>Đăng kí</a>
+              <a onClick={() => navigate("/user/register")}>Đăng kí</a>
             </p>
           </div>
         </div>

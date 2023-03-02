@@ -6,13 +6,12 @@ import { BiSearch } from "react-icons/bi";
 import { GrDocumentUpdate } from "react-icons/gr";
 import { useNavigate } from "react-router-dom";
 import people from "../../assets/img/personIcon.jpg";
-import { useAppDispatch } from "../../Hooks/HooksRedux";
+
 
 type Props = {};
 
-export default function TapNavleft({}: Props) {
+export default function NavTapLeft({}: Props) {
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
 
   type MenuItem = Required<MenuProps>["items"][number];
 

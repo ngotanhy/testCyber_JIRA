@@ -5,6 +5,10 @@ const apiGetAllUser = () => {
   let uri = "/Users/getUser";
   return http.get(uri);
 };
+const apiAssignUserProject=(data:RemoveUser)=>{
+  let uri = `/Project/assignUserProject`;
+  return http.post(uri,data);
+}
 
 const apiGetUserByProjectId = (id: Number) => {
   let uri = `/Users/getUserByProjectId?idProject=${id}`;
@@ -16,4 +20,4 @@ const apiRemoveUserFromProject = (dataDelete:RemoveUser) => {
   return http.post(uri,dataDelete);
 };
 
-export { apiGetAllUser, apiGetUserByProjectId, apiRemoveUserFromProject };
+export { apiGetAllUser, apiGetUserByProjectId, apiRemoveUserFromProject,apiAssignUserProject };

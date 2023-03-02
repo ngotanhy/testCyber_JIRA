@@ -18,8 +18,6 @@ import "react-toastify/dist/ReactToastify.css";
 import "../src/assets/scss/style.scss";
 
 import Loading from "./components/Loading/Loading";
-import { getStoreJSON, USER_LOGIN } from "./utils/setting";
-import {  user, userLogin } from "./redux/Reducers/userReducer";
 
 // ----- Lazy loading --------------------------------
 
@@ -53,7 +51,6 @@ export const toastOptionsSuccess: {} = {
 };
 
 export default function App({}: Props) {
-  
   return (
     <>
       <Suspense fallback={<Loading />}>
@@ -70,8 +67,8 @@ export default function App({}: Props) {
               <Route path="/createTask" element={<CreateTask />} />
               <Route path="/updateTask" element={<UpdateTask />} />
             </Route>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+            <Route path="/user/login" element={<Login />} />
+            <Route path="/user/register" element={<Register />} />
           </Routes>
         </HistoryRouter>
       </Suspense>

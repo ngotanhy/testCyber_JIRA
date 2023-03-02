@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useForm } from "react-hook-form";
@@ -7,20 +7,16 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { string, object } from "yup";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import classNames from "classnames";
-import { AppDispatch } from "../../redux/configStore";
-
 import { toastOptionsErr, toastOptionsSuccess } from "../../App";
 import { toast, ToastContainer } from "react-toastify";
 import { http, setStoreJSON, USER_LOGIN } from "../../utils/setting";
-
 import backgroundImageRegister from "../../assets/img/banner/anhBienDep.jpg";
-import { userRegister } from "../../utils/type/typeUser";
+import { userRegister } from "../../utils/type/TypeUser";
 
 
 type Props = {};
 
 export default function Register({}: Props) {
-  const dispatch: AppDispatch = useDispatch();
   const navigate = useNavigate();
   const [isShowPass, setIsShowPass] = useState(false);
 
@@ -64,7 +60,7 @@ export default function Register({}: Props) {
     if (result.status === 200) {
       await setStoreJSON(USER_LOGIN, result.data);
       toast.success("Đăng kí thành công", toastOptionsSuccess);
-      navigate("/login");
+      navigate("/user/login");
     } else {
       toast.error("Hãy Đăng Kí Lại", toastOptionsErr);
     }
@@ -80,10 +76,10 @@ export default function Register({}: Props) {
           backgroundSize: "100% 100%",
           backgroundRepeat: "no-repeat",
         }}
-        className="bg-grey-lighter min-h-screen flex flex-col bg-slate-300"
+        className="bg-grey-lighter min-h-screen flex flex-col"
       >
         <div className="container max-w-3xl mx-auto flex-1 flex flex-col items-center justify-center px-2 relative">
-          <div className="bg-white px-6 py-8 rounded shadow-md text-black w-full  ">
+          <div className="bg-green-200 rounded-lg px-6 py-8 text-black w-full  ">
             <h1 className="mb-8 text-3xl text-center">Đăng kí tài khoản</h1>
             <div className="sm:flex sm:gap-3">
               <div className=" sm:w-1/2">
@@ -91,8 +87,9 @@ export default function Register({}: Props) {
                   <input
                     {...register("name")}
                     type="text"
-                    className="block border border-grey-light w-full p-3 rounded mb-0"
+                    className="block border border-grey-light w-full p-3 rounded mb-0 hover:outline-none focus:outline-none"
                     placeholder="Tên"
+
                   />
                   {errors.name && (
                     <p className="m-0 text-red-500 text-md italic text-left mt-2">
@@ -104,7 +101,7 @@ export default function Register({}: Props) {
                   <input
                     {...register("email")}
                     type="text"
-                    className="block border border-grey-light w-full p-3 rounded mb-0"
+                    className="block border border-grey-light w-full p-3 rounded mb-0 hover:outline-none focus:outline-none"
                     placeholder="Email"
                   />
                   {errors.email && (
@@ -120,7 +117,7 @@ export default function Register({}: Props) {
                   <input
                     {...register("phoneNumber")}
                     type="text"
-                    className="block border border-grey-light w-full p-3 rounded mb-0"
+                    className="block border border-grey-light w-full p-3 rounded mb-0 hover:outline-none focus:outline-none"
                     placeholder="Số Điện Thoại"
                   />
                   {errors.phoneNumber && (
@@ -133,7 +130,7 @@ export default function Register({}: Props) {
                   <input
                     {...register("passWord")}
                     type={isShowPass ? "text" : "password"}
-                    className="block border border-grey-light w-full p-3 rounded mb-0"
+                    className="block border border-grey-light w-full p-3 rounded mb-0 hover:outline-none focus:outline-none"
                     placeholder="Mật khẩu"
                   />
                   {errors.passWord && (
@@ -143,7 +140,7 @@ export default function Register({}: Props) {
                   )}
                   <span
                     onClick={() => setIsShowPass(!isShowPass)}
-                    className="absolute top-4 right-1"
+                    className="absolute top-4 right-1 "
                   >
                     <AiOutlineEye
                       className={classNames("text-lg cursor-pointer", {
@@ -171,21 +168,14 @@ export default function Register({}: Props) {
             <button
               className="hover:text-blue-700"
               onClick={() => {
-                navigate("/login");
+                navigate("/user/login");
               }}
             >
               Đăng Nhập
             </button>
           </div>
         </div>
-        <button
-          className="sm:absolute top-10 left-10 font-medium text-xl text-black hover:text-red-400 "
-          onClick={() => {
-            navigate("/");
-          }}
-        >
-          Trang Chủ
-        </button>
+        
       </form>
       <ToastContainer />
     </>
