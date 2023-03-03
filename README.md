@@ -34,5 +34,5 @@
 ## 5. Tại sao bạn apply công việc này ?
   <p> Em có thể chỉ dẫn các bạn biết thêm nhiều kiếm thức trong ngành mà em tự học được cũng như trung tâm đã giảng dạy.
   Nên em rất hi vọng mình có thể được đảm nhiệm vị trí mentor này .
-  Hiện tại em có khá nhiều thời gian rảnh, vì thế em muốn apply.</p>
+  Em có khá nhiều thời gian rảnh, vì thế em muốn apply.</p>
   
