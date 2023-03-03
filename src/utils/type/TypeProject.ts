@@ -244,6 +244,7 @@ export interface TaskDeTail{
 //   "statusName": "DONE",
 //   "alias": "hoàn thành"
 // }
+
 export interface ListTask {
   lstTask:TaskDeTail [],
   members:user [],
@@ -278,26 +279,14 @@ export interface ListTask {
 //   taskName: "oke"
 //   taskTypeDetail: {id: 1, taskType: 'bug'}
 //   timeTrackingRemaining: 4
-//   timeTrackingSpent: 
-//   2
-//   typeId
-//   : 
-//   0
-//   [[Prototype]]
-//   : 
-//   Object
-//   length
-//   : 
-//   1
-//   [[Prototype]]
-//   : 
+//   timeTrackingSpent: 2
+//   typeId: 0
+//   [[Prototype]]: Object
+//   length: 1
+//   [[Prototype]]: 
 //   Array(0)
-//   statusId
-//   : 
-//   "1"
-//   statusName
-//   : 
-//   "BACKLOG"}
+//   statusId:  "1"
+//   statusName: "BACKLOG"}
 
 export type AddAssignTask = {
   projectId: number;
