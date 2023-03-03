@@ -57,11 +57,11 @@ export default function Register({}: Props) {
 
   const onSubmit = handleSubmit(async (values: userRegister) => {
     let result = await http.post("/Users/signup", values);
-    if (result.status === 200) {
+   try {
       await setStoreJSON(USER_LOGIN, result.data);
       toast.success("Đăng kí thành công", toastOptionsSuccess);
       navigate("/user/login");
-    } else {
+    } catch(e) {
       toast.error("Hãy Đăng Kí Lại", toastOptionsErr);
     }
   });

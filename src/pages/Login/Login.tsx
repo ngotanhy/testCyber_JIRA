@@ -10,6 +10,8 @@ import {
   setStoreJSON,
   USER_LOGIN,
 } from "../../utils/setting";
+import { toast } from "react-toastify";
+import { toastOptionsErr } from "../../App";
 
 
 interface userLogin {
@@ -37,11 +39,14 @@ function Login({}: Props) {
   });
 
   const onSubmit = handleSubmit(async (values: userLogin) => {
+    try{
     let userLogin = await http.post("/Users/signin", values);
     await setStoreJSON(USER_LOGIN, userLogin.data);
     await setStoreJSON(ACCESS_TOKEN,userLogin.data.content.accessToken)
     if (userLogin) {
       navigate(`/`);
+    }}catch(e){
+      alert("email or password incorrect")
     }
   });
 
