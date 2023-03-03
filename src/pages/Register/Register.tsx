@@ -60,7 +60,10 @@ export default function Register({}: Props) {
      let result = await http.post("/Users/signup", values);
      await setStoreJSON(USER_LOGIN, result.data);
      toast.success("Đăng kí thành công", toastOptionsSuccess);
-     navigate("/user/login");
+     setTimeout(()=>{
+      
+      navigate("/user/login");
+    },1000)
    } catch (e) {    
      toast.error("Hãy Đăng Kí Lại", toastOptionsErr);
    }
