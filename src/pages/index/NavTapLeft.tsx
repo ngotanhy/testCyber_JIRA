@@ -6,8 +6,8 @@ import { BiSearch } from "react-icons/bi";
 import { GrDocumentUpdate } from "react-icons/gr";
 import { useNavigate } from "react-router-dom";
 import people from "../../assets/img/personIcon.jpg";
-
-
+import {clearLocalStorage,USER_LOGIN,ACCESS_TOKEN} from "../../utils/setting";
+ 
 type Props = {};
 
 export default function NavTapLeft({}: Props) {
@@ -77,9 +77,15 @@ export default function NavTapLeft({}: Props) {
             <GrDocumentUpdate className="text-white " />
             Update Task
           </button>
-          <button className="flex gap-1 items-center hover:text-blue-500">
+          <button className="flex gap-1 items-center hover:text-blue-500"
+             onClick={() => {
+              clearLocalStorage(USER_LOGIN),
+              clearLocalStorage(ACCESS_TOKEN)
+              navigate("/user/login");
+            }}
+          >
             <BiSearch />
-            Search
+            Log out
           </button>
         </div>
       </div>

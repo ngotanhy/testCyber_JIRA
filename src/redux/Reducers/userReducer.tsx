@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { apiGetAllUser } from "../../utils/api/userApi";
 import { getStoreJSON, http, USER_LOGIN } from "../../utils/setting";
-import { user, userLogin } from "../../utils/type/typeUser";
+import { user, userLogin } from "../../utils/type/TypeUser";
 import { AppDispatch } from "../configStore";
 
 export interface userState {
@@ -26,9 +26,6 @@ const userAdminReducer = createSlice({
     getAllUser:(state,action:PayloadAction<user[]>)=>{
       state.userAll= action.payload
     },
-    getUserInTask:(state,action :PayloadAction<user[]>)=>{
-       
-    }
   },
 });
 

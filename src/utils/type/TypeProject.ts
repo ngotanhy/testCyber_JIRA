@@ -2,12 +2,12 @@ export interface CreTask {
     listUserAsign: [];
     taskName: string;
     description: string;
-    statusId: string;
+    statusId: string|number;
     originalEstimate: number;
     timeTrackingSpent: number;
     timeTrackingRemaining: number;
     projectId: number;
-    typeId: number;
+    typeId: number|string;
     priorityId: number;
   };
 
@@ -51,7 +51,7 @@ export  interface UpdProject  {
 
 export  interface UpdTask {
     listUserAsign: [];
-    taskId: string;
+    taskId: number;
     taskName: string;
     description: string;
     statusId: string;
@@ -70,8 +70,88 @@ export  interface UpdTask {
     categoryId: number | string;
     alias: string;
   };
+  export type Status = {
+    statusId: number | string;
+    statusName: string;
+    alias: string;
+    deleted: boolean;
+  };
+  
 
-  export type RemoveUser = {
-    projectId: number;
-    userId: number;
+  
+  export type TaskType = {
+    id: number | string;
+    taskType: string;
+  };
+  
+  export type Priority = {
+    priorityId: number | string;
+    priority: string;
+    description: string;
+    deleted: boolean;
+    alias: string;
+  };
+  
+  
+  
+ export interface Members{
+      userId: number;
+      name: string;
+      avatar: string;
+      email: string ;
+      phoneNumber: string ;
   }
+  interface listTask{
+    lstTaskDeTail: [] ;
+    statusId: number;
+    statusName: string;
+    alias: string;
+  }
+  
+
+  
+export interface ProjectDetail {
+  lstTask:listTask[];
+  members:Members [];
+  creator: {
+    id: number;
+    name: string;
+  };
+  id: number;
+  projectName: string;
+  description: string;
+  projectCategory: {
+    id: number;
+    name: string;
+  };
+  alias: string;
+}
+
+
+export interface TaskProject {
+  lstTaskDeTail: [];
+  statusId: number;
+  statusName: string;
+  alias: string;
+}
+
+export interface TaskReturnCreate {
+  taskId: number;
+  taskName: string;
+  alias: string;
+  description: string;
+  statusId: number;
+  originalEstimate: number;
+  timeTrackingSpent: number;
+  timeTrackingRemaining: number;
+  projectId: number;
+  typeId: number;
+  deleted: boolean;
+  reporterId: number;
+  priorityId: number;
+}
+
+export type removeOrAddUser={
+    projectId: number
+    userId: number
+}

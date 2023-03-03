@@ -1,11 +1,11 @@
 import { http } from "../setting";
-import { RemoveUser } from "../type/TypeProject";
+import { removeOrAddUser } from "../type/TypeProject";
 
 const apiGetAllUser = () => {
   let uri = "/Users/getUser";
   return http.get(uri);
 };
-const apiAssignUserProject=(data:RemoveUser)=>{
+const apiAssignUserProject=(data:removeOrAddUser)=>{
   let uri = `/Project/assignUserProject`;
   return http.post(uri,data);
 }
@@ -15,7 +15,7 @@ const apiGetUserByProjectId = (id: Number) => {
   return http.get(uri);
 };
 
-const apiRemoveUserFromProject = (dataDelete:RemoveUser) => {
+const apiRemoveUserFromProject = (dataDelete:removeOrAddUser) => {
   let uri = `/Project/removeUserFromProject`;
   return http.post(uri,dataDelete);
 };

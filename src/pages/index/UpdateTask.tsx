@@ -1,4 +1,4 @@
-import { Button, Descriptions, Form, Input, Select, Slider } from "antd";
+import { Button, Form, Input, Select, Slider } from "antd";
 import { TreeSelect } from "antd";
 
 import React, { useEffect, useRef, useState } from "react";
@@ -7,24 +7,24 @@ import {
   getAllProjectManager,
   getAllStatus,
   getAllTaskType,
-  getProjectByIdApi,
   getProjectByUser,
-  Priority,
-  project,
-  Status,
-  TaskType,
 } from "../../redux/Reducers/projectReducer";
 import { getAllUserApi } from "../../redux/Reducers/userReducer";
 import { getStoreJSON, http, USER_LOGIN } from "../../utils/setting";
 import { InputNumber } from "antd";
 import TinyMce from "../../components/TinyMce";
-import { useParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../Hooks/HooksRedux";
-import { user } from "../../utils/type/typeUser";
-import { UpdTask } from "../../utils/type/TypeProject";
+import { user } from "../../utils/type/TypeUser";
+import {
+  Priority,
+  project,
+  Status,
+  TaskType,
+  UpdTask,
+} from "../../utils/type/TypeProject";
 import { apiUpdateTask } from "../../utils/api/projectApi";
-
-
+import { apiGetUserByProjectId } from "../../utils/api/userApi";
+import { Editor as TinyMCEEditor } from "tinymce";
 
 const { SHOW_PARENT } = TreeSelect;
 const { Option } = Select;
@@ -32,13 +32,18 @@ const { Option } = Select;
 type Props = {};
 
 export default function UpdateTask({}: Props) {
-  const [inputValue, setInputValue] = useState(1);
-  const [value, setValue] = useState<string>();
+  // const [inputValue, setInputValue] = useState(1);
+  // const [value, setValue] = useState<string>();
+  const editorRef = useRef<TinyMCEEditor | null>(null);
   const [treeData, setTreeData] =
     useState<
       { title: string | number; value: string | number; key: string | number }[]
     >();
-
+  const { arrProject } = useAppSelector((state) => state.projectReducer);
+  const { status } = useAppSelector((state) => state.projectReducer);
+  const { taskType } = useAppSelector((state) => state.projectReducer);
+  const { priority } = useAppSelector((state) => state.projectReducer);
+  const { userAll } = useAppSelector((state) => state.userReducer);
   const { projectByUserLogin } = useAppSelector(
     (state) => state.projectReducer
   );
@@ -47,15 +52,9 @@ export default function UpdateTask({}: Props) {
   const { createTask } = useAppSelector((state) => state.projectReducer);
 
   const [userAssign, setUserAssign] = useState<user[]>();
-  const editorRef = useRef<any>(null);
-
-  const { status } = useAppSelector((state) => state.projectReducer);
-  const { taskType } = useAppSelector((state) => state.projectReducer);
-  const { priority } = useAppSelector((state) => state.projectReducer);
-  const { userAll } = useAppSelector((state) => state.userReducer);
 
   const dispatch = useAppDispatch();
-  
+
   //change list user for render
   const covertListUser = () => {
     let treeData: {
@@ -77,7 +76,7 @@ export default function UpdateTask({}: Props) {
 
   const tProps = {
     treeData,
-    value,
+    // value,
     treeCheckable: true,
     showCheckedStrategy: SHOW_PARENT,
     placeholder: "Please select",
@@ -86,13 +85,21 @@ export default function UpdateTask({}: Props) {
     },
   };
 
+  const onClickCallGetData = async (getItem:any, message: string) => {
+    if (status.length == 0) {
+      await dispatch(getItem);
+      alert("await loading " + message);
+    }
+  };
+
   const onFinish = async (values: UpdTask) => {
     if (editorRef.current) {
       values.description = editorRef.current.getContent();
     }
-    values.taskId= createTask.taskId.toString()
+    console.log(values);
+    values.taskId = createTask.taskId;
     try {
-      await apiUpdateTask(values)
+      await apiUpdateTask(values);
       alert("task created success");
     } catch (e) {
       alert("task failed");
@@ -101,10 +108,7 @@ export default function UpdateTask({}: Props) {
 
   const getUserByProject = async (idProject: number) => {
     try {
-      let result = await http.get(
-        `/Users/getUserByProjectId?idProject=${idProject}`
-      );
-      // console.log(result.data.content);
+      let result = await apiGetUserByProjectId(idProject);
       await setUserAssign(result.data.content);
     } catch (e) {}
   };
@@ -114,16 +118,20 @@ export default function UpdateTask({}: Props) {
   }, [userAssign]);
 
   useEffect(() => {
-    dispatch(getAllProjectManager());
-    dispatch(getAllStatus());
-    dispatch(getALLPriority());
-    dispatch(getAllTaskType());
+    if (!status) {
+      dispatch(getAllStatus());
+    } else if (!priority) {
+      dispatch(getALLPriority());
+    } else if (!taskType) {
+      dispatch(getAllTaskType());
+    } else if (!arrProject) {
+      dispatch(getAllProjectManager());
+    }
     dispatch(getAllUserApi());
     dispatch(getProjectByUser(getStoreJSON(USER_LOGIN).content.id));
     if (userAll) {
       covertListUser();
     }
-    // dispatch(getProjectByIdApi(11724))
   }, []);
 
   return (
@@ -142,6 +150,15 @@ export default function UpdateTask({}: Props) {
               defaultValue={projectByUserLogin[0]?.projectName}
               onChange={(value) => {
                 getUserByProject(Number(value));
+              }}
+              onFocus={async () => {
+                if (projectByUserLogin.length == 0) {
+                  await dispatch(getAllProjectManager());
+                  await dispatch(
+                    getProjectByUser(getStoreJSON(USER_LOGIN).content.id)
+                  );
+                  alert("await get Project for you");
+                }
               }}
             >
               {projectByUserLogin?.map((item: project) => {
@@ -169,7 +186,12 @@ export default function UpdateTask({}: Props) {
             rules={[{ message: "Please input Status!" }]}
             className="formItem"
           >
-            <Select className="w-full">
+            <Select
+              className="w-full"
+              onClick={() => {
+                onClickCallGetData(getAllStatus(), "status");
+              }}
+            >
               {status?.map((item: Status) => {
                 return (
                   <Option
@@ -190,7 +212,12 @@ export default function UpdateTask({}: Props) {
               name="priorityId"
               className="w-full  formItem"
             >
-              <Select className="w-full">
+              <Select
+                className="w-full"
+                onClick={() => {
+                  onClickCallGetData(getALLPriority(), "priority");
+                }}
+              >
                 {priority?.map((item: Priority) => {
                   return (
                     <Option
@@ -209,7 +236,12 @@ export default function UpdateTask({}: Props) {
               label="TaskType"
               name="typeId"
             >
-              <Select className="w-full">
+              <Select
+                className="w-full"
+                onClick={() => {
+                  onClickCallGetData(getAllTaskType(), "task type");
+                }}
+              >
                 {taskType?.map((item: TaskType) => {
                   return (
                     <Option value={item.id} key={item.id} className="mt-1 ">
@@ -234,11 +266,7 @@ export default function UpdateTask({}: Props) {
               name="timeTracking"
               className="w-full formItem"
             >
-              <Slider
-                min={1}
-                max={20}
-                value={typeof inputValue === "number" ? inputValue : 0}
-              />
+              <Slider min={0} max={30} value={0} />
             </Form.Item>
           </div>
 

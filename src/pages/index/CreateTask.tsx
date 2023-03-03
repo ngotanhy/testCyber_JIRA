@@ -4,14 +4,11 @@ import { TreeSelect } from "antd";
 import React, { useEffect, useRef, useState } from "react";
 import {
   getALLPriority,
+  getAllProjectManager,
   getAllStatus,
   getAllTaskType,
   getCreateTask,
   getProjectByUser,
-  Priority,
-  project,
-  Status,
-  TaskType,
 } from "../../redux/Reducers/projectReducer";
 import { getAllUserApi } from "../../redux/Reducers/userReducer";
 import { getStoreJSON, http, USER_LOGIN } from "../../utils/setting";
@@ -19,11 +16,11 @@ import { InputNumber } from "antd";
 import TinyMce from "../../components/TinyMce";
 import { useAppDispatch, useAppSelector } from "../../Hooks/HooksRedux";
 import { useNavigate } from "react-router-dom";
-import { user } from "../../utils/type/typeUser";
-import { CreTask } from "../../utils/type/TypeProject";
+import { user } from "../../utils/type/TypeUser";
+import { CreTask, Priority, project, Status, TaskType } from "../../utils/type/TypeProject";
 import { apiGetUserByProjectId } from "../../utils/api/userApi";
 import { apiCreateTask } from "../../utils/api/projectApi";
-
+import { Editor as TinyMCEEditor } from "tinymce";
 
 const { SHOW_PARENT } = TreeSelect;
 const { Option } = Select;
@@ -32,14 +29,13 @@ type Props = {};
 
 export default function CreateTask({}: Props) {
   const navigate = useNavigate();
-  const [inputValue, setInputValue] = useState(1);
-  const [value, setValue] = useState<string>();
+
   const [treeData, setTreeData] =
     useState<
       { title: string | number; value: string | number; key: string | number }[]
     >();
   const [userAssign, setUserAssign] = useState<user[]>();
-  const editorRef = useRef<any>(null);
+  const editorRef = useRef<TinyMCEEditor | null>(null);
 
   const { status } = useAppSelector((state) => state.projectReducer);
   const { taskType } = useAppSelector((state) => state.projectReducer);
@@ -69,7 +65,7 @@ export default function CreateTask({}: Props) {
 
   const tProps = {
     treeData,
-    value,
+    // value,
     treeCheckable: true,
     showCheckedStrategy: SHOW_PARENT,
     placeholder: "Please select",
@@ -82,6 +78,7 @@ export default function CreateTask({}: Props) {
     if (editorRef.current) {
       values.description = editorRef.current.getContent();
     }
+    // console.log(values)
     try {
       let createTask = await apiCreateTask(values);
       await dispatch(getCreateTask(createTask.data.content));
@@ -98,7 +95,7 @@ export default function CreateTask({}: Props) {
     }
   };
 
-  const getAllDate = async () => {
+  const getAllData = async () => {
     await dispatch(getAllStatus());
     await dispatch(getALLPriority());
     await dispatch(getAllTaskType());
@@ -107,7 +104,7 @@ export default function CreateTask({}: Props) {
 
   const getUserByProject = async (idProject: number) => {
     try {
-      let result = await apiGetUserByProjectId(idProject)
+      let result = await apiGetUserByProjectId(idProject);
       // console.log(result.data.content);
       await setUserAssign(result.data.content);
     } catch (e) {}
@@ -119,7 +116,7 @@ export default function CreateTask({}: Props) {
 
   useEffect(() => {
     if (getStoreJSON(USER_LOGIN)) {
-      getAllDate();
+      getAllData();
       dispatch(getProjectByUser(getStoreJSON(USER_LOGIN).content.id));
     } else {
       navigate("/");
@@ -145,8 +142,12 @@ export default function CreateTask({}: Props) {
                   getUserByProject(Number(value));
                 }
               }}
-              onFocus={() => {
+              onFocus={async () => {
                 if (projectByUserLogin.length == 0) {
+                  await dispatch(getAllProjectManager());
+                  await dispatch(
+                    getProjectByUser(getStoreJSON(USER_LOGIN).content.id)
+                  );
                   alert("please create project for you");
                 }
               }}
@@ -246,11 +247,7 @@ export default function CreateTask({}: Props) {
               className="w-full formItem"
               initialValue={0}
             >
-              <Slider
-                min={1}
-                max={20}
-                value={typeof inputValue === "number" ? inputValue : 0}
-              />
+              <Slider min={0} max={30} defaultValue={0} />
             </Form.Item>
           </div>
 

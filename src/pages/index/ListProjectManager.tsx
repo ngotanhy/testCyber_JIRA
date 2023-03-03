@@ -136,33 +136,33 @@ export default function ListProjectManager({}: Props) {
       render: (_, { members, id }) => (
         <>
           <div className="flex">
-          <Popover
-        placement="bottom"
-        content={content}
-        className="flex"
-        title={
-          <>
-            <span>Member</span>
-          </>
-        }
-        onOpenChange={() => {
-          setContentMember(id);
-        }}
-      >
-        {members?.map((member) => {
-          return (
-            <div>
-              <div className=" w-7 h-7 mr-1 relative">
-                <img
-                  src={member.avatar}
-                  alt=""
-                  className="w-7 h-7 absolute rounded-full top-0 left-0 inline"
-                />
-              </div>
-            </div>
-          );
-        })}
-      </Popover>
+            <Popover
+              placement="bottom"
+              content={content}
+              className="flex"
+              title={
+                <>
+                  <span>Member</span>
+                </>
+              }
+              onOpenChange={() => {
+                setContentMember(id);
+              }}
+            >
+              {members?.map((member) => {
+                return (
+                  <div>
+                    <div className=" w-7 h-7 mr-1 relative">
+                      <img
+                        src={member.avatar}
+                        alt=""
+                        className="w-7 h-7 absolute rounded-full top-0 left-0 inline"
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </Popover>
             <Popover
               placement="bottom"
               content={
@@ -174,10 +174,17 @@ export default function ListProjectManager({}: Props) {
                         projectId: id,
                         userId: value,
                       };
+                      let checkMember = members.some(
+                        (member) => member.userId == data.userId
+                      );
                       try {
-                        await apiAssignUserProject(data);
-                        alert("add user success");
-                        dispatch(getAllProjectManager());
+                        if (!checkMember) {
+                          await apiAssignUserProject(data);
+                          alert("add user success");
+                          dispatch(getAllProjectManager());
+                        } else {
+                          alert("users already have ");
+                        }
                       } catch (e) {
                         alert("add user failed, project not for you");
                       }
