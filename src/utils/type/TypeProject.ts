@@ -4,12 +4,12 @@ export interface CreTask {
     listUserAsign: [];
     taskName: string;
     description: string;
-    statusId: string|number;
+    statusId:number;
     originalEstimate: number;
     timeTrackingSpent: number;
     timeTrackingRemaining: number;
     projectId: number;
-    typeId: number|string;
+    typeId: number;
     priorityId: number;
   };
 
@@ -56,7 +56,7 @@ export  interface UpdTask {
     taskId: number;
     taskName: string;
     description: string;
-    statusId: string;
+    statusId: number;
     originalEstimate: number;
     timeTrackingSpent: number;
     timeTrackingRemaining: number;

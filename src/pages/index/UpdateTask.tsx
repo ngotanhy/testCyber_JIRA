@@ -25,11 +25,25 @@ import {
   UpdTask,
 } from "../../utils/type/TypeProject";
 import { apiGetProjectDetail, apiUpdateTask } from "../../utils/api/projectApi";
-import { apiGetUserByProjectId } from "../../utils/api/userApi";
+import { apiAddUserAssignTask, apiGetUserByProjectId } from "../../utils/api/userApi";
 import { Editor as TinyMCEEditor } from "tinymce";
 
 const { SHOW_PARENT } = TreeSelect;
 const { Option } = Select;
+
+type AddAssignTask = {
+  projectId: number;
+  taskName: string;
+  listUserAsign: {
+    userId: number;
+  }[];
+  taskId: number;
+};
+
+type AssignTask = {
+  taskId: number;
+  userId: number;
+};
 
 type Props = {};
 
@@ -91,7 +105,7 @@ export default function UpdateTask({}: Props) {
   // const handleGetTaskId
   const handleGetArrTask = (status: string) => {
     lstTaskDeTail.map(async (item: any) => {
-      if (item.statusName === status) {
+      if (item.statusId === status) {
         await setDeTail(item.lstTaskDeTail);
       }
     });
@@ -102,10 +116,38 @@ export default function UpdateTask({}: Props) {
       values.description = editorRef.current.getContent();
     }
     if (typeof values.taskId === "number") {
-      console.log(values);
+      values = { ...values, statusId: Number(values.statusId) };
       try {
+        let dataUser: AssignTask[] = [];
+      for (let u in values.listUserAsign) {
+        dataUser.push({
+          taskId: Number(values.taskId),
+          userId: Number(values.listUserAsign[u]),
+        });
+      }
+      if (dataUser.length > 0) {
+        let assignTask = dataUser.map(
+          (item) =>
+            new Promise((resolve, reject) => {
+              const api = apiAddUserAssignTask(item);
+              api.then((result) => {
+                resolve(result);
+              });
+            })
+        );
+        Promise.all(assignTask)
+          .then((result) => {
+            console.log(result, "ok");
+            alert("success assign task")
+          })
+          .catch((err) => {
+            console.log("error: " + err);
+          });
+      }
+
+
         await apiUpdateTask(values);
-        alert("task created success");
+        alert("update task  success");
       } catch (e) {
         alert("task failed");
       }
@@ -207,7 +249,7 @@ export default function UpdateTask({}: Props) {
               {status?.map((item: Status) => {
                 return (
                   <Option
-                    value={item.statusName}
+                    value={item.statusId}
                     key={item.statusId}
                     className="mt-1 "
                   >

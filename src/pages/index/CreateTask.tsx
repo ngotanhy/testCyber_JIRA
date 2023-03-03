@@ -19,11 +19,12 @@ import { useNavigate } from "react-router-dom";
 import { user } from "../../utils/type/TypeUser";
 import { CreTask, Priority, project, Status, TaskType } from "../../utils/type/TypeProject";
 import { apiGetUserByProjectId } from "../../utils/api/userApi";
-import { apiCreateTask,apiGetProjectDetail } from "../../utils/api/projectApi";
+import { apiCreateTask } from "../../utils/api/projectApi";
 import { Editor as TinyMCEEditor } from "tinymce";
 
 const { SHOW_PARENT } = TreeSelect;
 const { Option } = Select;
+
 
 type Props = {};
 
@@ -77,11 +78,9 @@ export default function CreateTask({}: Props) {
     if (editorRef.current) {
       values.description = editorRef.current.getContent();
     }
-    // console.log(values)
+    values={...values,statusId:Number(values.statusId)}
     try {
       let createTask = await apiCreateTask(values);
-      console.log(values)
-      await dispatch(getCreateTask(createTask.data.content));
       //create Task success => create user for task
       for (let u in values.listUserAsign) {
         await http.post("/Project/assignUserTask", {
@@ -176,13 +175,13 @@ export default function CreateTask({}: Props) {
             name="statusId"
             rules={[{ message: "Please input Status!" }]}
             className="formItem"
-            initialValue={" "}
+            initialValue={""}
           >
             <Select className="w-full">
               {status?.map((item: Status) => {
                 return (
                   <Option
-                    value={item.statusName}
+                    value={item.statusId}
                     key={item.statusId}
                     className="mt-1 "
                   >
