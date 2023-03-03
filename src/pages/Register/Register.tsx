@@ -56,14 +56,14 @@ export default function Register({}: Props) {
   });
 
   const onSubmit = handleSubmit(async (values: userRegister) => {
-    let result = await http.post("/Users/signup", values);
    try {
-      await setStoreJSON(USER_LOGIN, result.data);
-      toast.success("Đăng kí thành công", toastOptionsSuccess);
-      navigate("/user/login");
-    } catch(e) {
-      toast.error("Hãy Đăng Kí Lại", toastOptionsErr);
-    }
+     let result = await http.post("/Users/signup", values);
+     await setStoreJSON(USER_LOGIN, result.data);
+     toast.success("Đăng kí thành công", toastOptionsSuccess);
+     navigate("/user/login");
+   } catch (e) {    
+     toast.error("Hãy Đăng Kí Lại", toastOptionsErr);
+   }
   });
 
   return (
