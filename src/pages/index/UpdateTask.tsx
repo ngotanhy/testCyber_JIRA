@@ -51,9 +51,8 @@ export default function UpdateTask({}: Props) {
   );
 
   //get taskID
-  const [lstTaskDeTail,setLstTaskDeTail]=useState<TaskDeTail[]>([])
-  const [lstDeTail,setDeTail]=useState<TaskDeTail[]>([])
-
+  const [lstTaskDeTail, setLstTaskDeTail] = useState<TaskDeTail[]>([]);
+  const [lstDeTail, setDeTail] = useState<TaskDeTail[]>([]);
 
   const [userAssign, setUserAssign] = useState<user[]>();
 
@@ -89,50 +88,41 @@ export default function UpdateTask({}: Props) {
     },
   };
 
-  const onClickCallGetData = async (getItem:any, message: string, nameItem:any) => {
-    if (nameItem.length == 0) {
-      await dispatch(getItem);
-      alert("await loading " + message);
-    }
-  };
-
   // const handleGetTaskId
-  const handleGetArrTask= (status:string)=>{
-    lstTaskDeTail.map(async(item:any)=>{
-      if(item.statusName===status){
-        await setDeTail(item.lstTaskDeTail)
+  const handleGetArrTask = (status: string) => {
+    lstTaskDeTail.map(async (item: any) => {
+      if (item.statusName === status) {
+        await setDeTail(item.lstTaskDeTail);
       }
-    })
-   
-  }
+    });
+  };
 
   const onFinish = async (values: UpdTask) => {
     if (editorRef.current) {
       values.description = editorRef.current.getContent();
     }
-    if(typeof values.taskId === "number" ){
-      console.log(values)
+    if (typeof values.taskId === "number") {
+      console.log(values);
       try {
         await apiUpdateTask(values);
-        alert("task created success");    
+        alert("task created success");
       } catch (e) {
         alert("task failed");
       }
-    }else{
-      alert("create task for the project")
+    } else {
+      alert("create task for the project");
     }
   };
 
-  const getListTask=async(idProject: number)=>{
-    try{
-      let dataDetail =await apiGetProjectDetail(idProject)
-      let ListTask:ListTask=dataDetail.data.content;
-      setLstTaskDeTail(ListTask.lstTask)
-      // console.log(ListTask.lstTask)
-    }catch(e){
-      alert("error")
+  const getListTask = async (idProject: number) => {
+    try {
+      let dataDetail = await apiGetProjectDetail(idProject);
+      let ListTask: ListTask = dataDetail.data.content;
+      setLstTaskDeTail(ListTask.lstTask);
+    } catch (e) {
+      alert("error");
     }
-  }
+  };
 
   const getUserByProject = async (idProject: number) => {
     try {
@@ -186,6 +176,9 @@ export default function UpdateTask({}: Props) {
                   await dispatch(
                     getProjectByUser(getStoreJSON(USER_LOGIN).content.id)
                   );
+                  await dispatch(getALLPriority());
+                  await dispatch(getAllStatus());
+                  await dispatch(getAllTaskType());
                   alert("await get Project for you");
                 }
               }}
@@ -207,10 +200,7 @@ export default function UpdateTask({}: Props) {
           >
             <Select
               className="w-full"
-              onClick={() => {
-                onClickCallGetData(getAllStatus(), "status",status);
-              }}
-              onChange={(value)=>{
+              onChange={(value) => {
                 handleGetArrTask(value);
               }}
             >
@@ -227,28 +217,26 @@ export default function UpdateTask({}: Props) {
               })}
             </Select>
           </Form.Item>
-          <Form.Item
-            label="TaskID"
-            name="taskId"
-            className="formItem"
-          >
-            <Select
-              className="w-full"
-            >
-              {lstDeTail.length>0 ? lstDeTail.map((item:TaskDeTail) => {
-                return (
-                  <Option
-                    value={item.taskId}
-                    key={item.taskId}
-                    className="mt-1 "
-                  >
-                    {item.taskId}
-                  </Option>
-                );
-              }):<p>Not task, you cannot update task</p>}
+          <Form.Item label="TaskID" name="taskId" className="formItem">
+            <Select className="w-full">
+              {lstDeTail.length > 0 ? (
+                lstDeTail.map((item: TaskDeTail) => {
+                  return (
+                    <Option
+                      value={item.taskId}
+                      key={item.taskId}
+                      className="mt-1 "
+                    >
+                      {item.taskId}
+                    </Option>
+                  );
+                })
+              ) : (
+                <p>Not task, you cannot update task</p>
+              )}
             </Select>
           </Form.Item>
-          
+
           <Form.Item
             label="Task Name"
             name="taskName"
@@ -264,12 +252,7 @@ export default function UpdateTask({}: Props) {
               name="priorityId"
               className="w-full  formItem"
             >
-              <Select
-                className="w-full"
-                onClick={() => {
-                  onClickCallGetData(getALLPriority(), "priority",priority);
-                }}
-              >
+              <Select className="w-full" onClick={() => {}}>
                 {priority?.map((item: Priority) => {
                   return (
                     <Option
@@ -288,12 +271,7 @@ export default function UpdateTask({}: Props) {
               label="TaskType"
               name="typeId"
             >
-              <Select
-                className="w-full"
-                onClick={() => {
-                  onClickCallGetData(getAllTaskType(), "task type",taskType);
-                }}
-              >
+              <Select className="w-full" onClick={() => {}}>
                 {taskType?.map((item: TaskType) => {
                   return (
                     <Option value={item.id} key={item.id} className="mt-1 ">
