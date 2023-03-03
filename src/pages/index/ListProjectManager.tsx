@@ -100,7 +100,7 @@ export default function ListProjectManager({}: Props) {
   const deleteProject = async (id: number) => {
     try {
       await apiDeleteProject(id);
-      toast.success("deleted user success", toastOptionsSuccess);
+      toast.success("deleted project success", toastOptionsSuccess);
       await dispatch(setAllProject(id));
     } catch (e) {
       toast.error(

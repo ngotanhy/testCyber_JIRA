@@ -23,7 +23,7 @@ export default function DashBoard({}: Props) {
           <NavTapLeft />
         </div>
         <div className="col-span-6 mt-8 ml-6 relative">
-          <ToastContainer />
+          <ToastContainer autoClose={1000} />
           <Outlet />
         </div>
       </div>

@@ -37,15 +37,15 @@ const AddAssignTaskUser = lazy(() => import("./pages/index/AddAssignTaskUser"));
 type Props = {};
 
 export const toastOptionsErr: {} = {
-  position: "bottom-right",
-  autoClose: 8000,
+  position: "top-right",
+  autoClose: 1000,
   pauseOnHover: true,
   draggable: true,
   theme: "dark",
 };
 export const toastOptionsSuccess: {} = {
-  position: "bottom-right",
-  autoClose: 8000,
+  position: "top-right",
+  autoClose: 1000,
   pauseOnHover: true,
   draggable: true,
   theme: "light",
