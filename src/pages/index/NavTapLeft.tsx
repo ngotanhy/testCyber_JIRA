@@ -77,6 +77,15 @@ export default function NavTapLeft({}: Props) {
             <GrDocumentUpdate className="text-white " />
             Update Task
           </button>
+          <button
+            className="flex gap-1 items-center hover:text-blue-500 mb-2"
+            onClick={() => {
+              navigate("addAssignTask");
+            }}
+          >
+            <GrDocumentUpdate className="text-white " />
+            Add AssignTask
+          </button>
           <button className="flex gap-1 items-center hover:text-blue-500"
              onClick={() => {
               clearLocalStorage(USER_LOGIN),

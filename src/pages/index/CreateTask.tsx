@@ -19,7 +19,7 @@ import { useNavigate } from "react-router-dom";
 import { user } from "../../utils/type/TypeUser";
 import { CreTask, Priority, project, Status, TaskType } from "../../utils/type/TypeProject";
 import { apiGetUserByProjectId } from "../../utils/api/userApi";
-import { apiCreateTask } from "../../utils/api/projectApi";
+import { apiCreateTask,apiGetProjectDetail } from "../../utils/api/projectApi";
 import { Editor as TinyMCEEditor } from "tinymce";
 
 const { SHOW_PARENT } = TreeSelect;
@@ -36,7 +36,6 @@ export default function CreateTask({}: Props) {
     >();
   const [userAssign, setUserAssign] = useState<user[]>();
   const editorRef = useRef<TinyMCEEditor | null>(null);
-
   const { status } = useAppSelector((state) => state.projectReducer);
   const { taskType } = useAppSelector((state) => state.projectReducer);
   const { priority } = useAppSelector((state) => state.projectReducer);
@@ -81,6 +80,7 @@ export default function CreateTask({}: Props) {
     // console.log(values)
     try {
       let createTask = await apiCreateTask(values);
+      console.log(values)
       await dispatch(getCreateTask(createTask.data.content));
       //create Task success => create user for task
       for (let u in values.listUserAsign) {
@@ -89,7 +89,7 @@ export default function CreateTask({}: Props) {
           userId: values.listUserAsign[u],
         });
       }
-      alert("task created successfully");
+      alert("task created success");
     } catch (e) {
       alert("task failed , you can change task name");
     }
@@ -105,7 +105,6 @@ export default function CreateTask({}: Props) {
   const getUserByProject = async (idProject: number) => {
     try {
       let result = await apiGetUserByProjectId(idProject);
-      // console.log(result.data.content);
       await setUserAssign(result.data.content);
     } catch (e) {}
   };

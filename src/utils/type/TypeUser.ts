@@ -5,7 +5,7 @@ export interface user {
     phoneNumber: string;
     userId: number;
   }
-
+ 
 
 export interface userRegister{
     email: string,

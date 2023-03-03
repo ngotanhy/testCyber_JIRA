@@ -20,4 +20,16 @@ const apiRemoveUserFromProject = (dataDelete:removeOrAddUser) => {
   return http.post(uri,dataDelete);
 };
 
-export { apiGetAllUser, apiGetUserByProjectId, apiRemoveUserFromProject,apiAssignUserProject };
+const apiAddUserAssignTask=(data:{taskId:number,
+  userId: number})=>{
+    let uri = `/Project/assignUserTask`;
+    return http.post(uri, data);
+}
+
+export {
+   apiGetAllUser, 
+  apiGetUserByProjectId, 
+  apiRemoveUserFromProject,
+  apiAssignUserProject,
+  apiAddUserAssignTask
+};

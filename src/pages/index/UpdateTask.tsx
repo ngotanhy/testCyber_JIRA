@@ -16,13 +16,15 @@ import TinyMce from "../../components/TinyMce";
 import { useAppDispatch, useAppSelector } from "../../Hooks/HooksRedux";
 import { user } from "../../utils/type/TypeUser";
 import {
+  ListTask,
   Priority,
   project,
   Status,
+  TaskDeTail,
   TaskType,
   UpdTask,
 } from "../../utils/type/TypeProject";
-import { apiUpdateTask } from "../../utils/api/projectApi";
+import { apiGetProjectDetail, apiUpdateTask } from "../../utils/api/projectApi";
 import { apiGetUserByProjectId } from "../../utils/api/userApi";
 import { Editor as TinyMCEEditor } from "tinymce";
 
@@ -49,7 +51,9 @@ export default function UpdateTask({}: Props) {
   );
 
   //get taskID
-  const { createTask } = useAppSelector((state) => state.projectReducer);
+  const [lstTaskDeTail,setLstTaskDeTail]=useState<TaskDeTail[]>([])
+  const [lstDeTail,setDeTail]=useState<TaskDeTail[]>([])
+
 
   const [userAssign, setUserAssign] = useState<user[]>();
 
@@ -85,26 +89,50 @@ export default function UpdateTask({}: Props) {
     },
   };
 
-  const onClickCallGetData = async (getItem:any, message: string) => {
-    if (status.length == 0) {
+  const onClickCallGetData = async (getItem:any, message: string, nameItem:any) => {
+    if (nameItem.length == 0) {
       await dispatch(getItem);
       alert("await loading " + message);
     }
   };
 
+  // const handleGetTaskId
+  const handleGetArrTask= (status:string)=>{
+    lstTaskDeTail.map(async(item:any)=>{
+      if(item.statusName===status){
+        await setDeTail(item.lstTaskDeTail)
+      }
+    })
+   
+  }
+
   const onFinish = async (values: UpdTask) => {
     if (editorRef.current) {
       values.description = editorRef.current.getContent();
     }
-    console.log(values);
-    values.taskId = createTask.taskId;
-    try {
-      await apiUpdateTask(values);
-      alert("task created success");
-    } catch (e) {
-      alert("task failed");
+    if(typeof values.taskId === "number" ){
+      console.log(values)
+      try {
+        await apiUpdateTask(values);
+        alert("task created success");    
+      } catch (e) {
+        alert("task failed");
+      }
+    }else{
+      alert("create task for the project")
     }
   };
+
+  const getListTask=async(idProject: number)=>{
+    try{
+      let dataDetail =await apiGetProjectDetail(idProject)
+      let ListTask:ListTask=dataDetail.data.content;
+      setLstTaskDeTail(ListTask.lstTask)
+      // console.log(ListTask.lstTask)
+    }catch(e){
+      alert("error")
+    }
+  }
 
   const getUserByProject = async (idProject: number) => {
     try {
@@ -150,6 +178,7 @@ export default function UpdateTask({}: Props) {
               defaultValue={projectByUserLogin[0]?.projectName}
               onChange={(value) => {
                 getUserByProject(Number(value));
+                getListTask(Number(value));
               }}
               onFocus={async () => {
                 if (projectByUserLogin.length == 0) {
@@ -170,16 +199,6 @@ export default function UpdateTask({}: Props) {
               })}
             </Select>
           </Form.Item>
-
-          <Form.Item
-            label="Task Name"
-            name="taskName"
-            rules={[{ message: "Please input task name!" }]}
-            className="formItem"
-          >
-            <Input className="rounded-sm" />
-          </Form.Item>
-
           <Form.Item
             label="Status"
             name="statusId"
@@ -189,7 +208,10 @@ export default function UpdateTask({}: Props) {
             <Select
               className="w-full"
               onClick={() => {
-                onClickCallGetData(getAllStatus(), "status");
+                onClickCallGetData(getAllStatus(), "status",status);
+              }}
+              onChange={(value)=>{
+                handleGetArrTask(value);
               }}
             >
               {status?.map((item: Status) => {
@@ -205,6 +227,36 @@ export default function UpdateTask({}: Props) {
               })}
             </Select>
           </Form.Item>
+          <Form.Item
+            label="TaskID"
+            name="taskId"
+            className="formItem"
+          >
+            <Select
+              className="w-full"
+            >
+              {lstDeTail.length>0 ? lstDeTail.map((item:TaskDeTail) => {
+                return (
+                  <Option
+                    value={item.taskId}
+                    key={item.taskId}
+                    className="mt-1 "
+                  >
+                    {item.taskId}
+                  </Option>
+                );
+              }):<p>Not task, you cannot update task</p>}
+            </Select>
+          </Form.Item>
+          
+          <Form.Item
+            label="Task Name"
+            name="taskName"
+            rules={[{ message: "Please input task name!" }]}
+            className="formItem"
+          >
+            <Input className="rounded-sm" />
+          </Form.Item>
 
           <div className="flex justify-between gap-3">
             <Form.Item
@@ -215,7 +267,7 @@ export default function UpdateTask({}: Props) {
               <Select
                 className="w-full"
                 onClick={() => {
-                  onClickCallGetData(getALLPriority(), "priority");
+                  onClickCallGetData(getALLPriority(), "priority",priority);
                 }}
               >
                 {priority?.map((item: Priority) => {
@@ -239,7 +291,7 @@ export default function UpdateTask({}: Props) {
               <Select
                 className="w-full"
                 onClick={() => {
-                  onClickCallGetData(getAllTaskType(), "task type");
+                  onClickCallGetData(getAllTaskType(), "task type",taskType);
                 }}
               >
                 {taskType?.map((item: TaskType) => {
