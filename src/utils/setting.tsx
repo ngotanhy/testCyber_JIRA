@@ -88,11 +88,9 @@ http.interceptors.response.use(
   },
   (err) => {
     if (err.response.status === 400 || err.response.status === 404) {
-      toast.error("Error", toastOptionsErr);
       return Promise.reject(err);
     }
     if (err.response.status === 401 || err.response.status === 403) {
-      toast.error("Token Không hợp lệ! Vui lòng đăng nhập lại", toastOptionsErr);
       return Promise.reject(err);
     }
   }
