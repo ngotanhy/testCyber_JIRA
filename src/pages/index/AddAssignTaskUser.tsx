@@ -22,13 +22,12 @@ import {
   project,
   Status,
   TaskDeTail,
-  UpdTask,
 } from "../../utils/type/TypeProject";
 import { user } from "../../utils/type/TypeUser";
 
 type Props = {};
 
-export default function AddAssignTask({}: Props) {
+export default function AddAssignTaskUser({}: Props) {
   const dispatch = useAppDispatch();
   const [userAssign, setUserAssign] = useState<user[]>();
   const [lstTaskDeTail, setLstTaskDeTail] = useState<TaskDeTail[]>([]);
@@ -87,7 +86,6 @@ export default function AddAssignTask({}: Props) {
   const getUserByProject = async (idProject: number) => {
     try {
       let result = await apiGetUserByProjectId(idProject);
-      // console.log(result.data.content);
       await setUserAssign(result.data.content);
     } catch (e) {}
   };
@@ -97,7 +95,6 @@ export default function AddAssignTask({}: Props) {
       let dataDetail = await apiGetProjectDetail(idProject);
       let ListTask: ListTask = dataDetail.data.content;
       setLstTaskDeTail(ListTask.lstTask);
-      // console.log(ListTask.lstTask)
     } catch (e) {
       alert("error");
     }
@@ -107,7 +104,6 @@ export default function AddAssignTask({}: Props) {
     lstTaskDeTail.map(async (item: any) => {
       if (item.statusName === status) {
         await setDeTail(item.lstTaskDeTail);
-        console.log("a");
       }
     });
   };
@@ -175,10 +171,6 @@ export default function AddAssignTask({}: Props) {
                   await dispatch(getAllProjectManager());
                   await dispatch(
                     getProjectByUser(getStoreJSON(USER_LOGIN).content.id)
-                  );
-                  toast.error(
-                    "task failed , you can change task name",
-                    toastOptionsErr
                   );
                 }
               }}

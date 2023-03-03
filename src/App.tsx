@@ -32,7 +32,7 @@ const ListProjectManager = lazy(
 );
 const CreateTask = lazy(() => import("./pages/index/CreateTask"));
 const UpdateTask = lazy(() => import("./pages/index/UpdateTask"));
-const AddAssignTask = lazy(() => import("./pages/index/AddAssignTask"));
+const AddAssignTaskUser = lazy(() => import("./pages/index/AddAssignTaskUser"));
 
 type Props = {};
 
@@ -66,7 +66,7 @@ export default function App({}: Props) {
               <Route path="/listProject" element={<ListProjectManager />} />
               <Route path="/createTask" element={<CreateTask />} />
               <Route path="/updateTask" element={<UpdateTask />} />
-              <Route path="/addAssignTask" element={<AddAssignTask />} />
+              <Route path="/addAssignTask" element={<AddAssignTaskUser />} />
             </Route>
             <Route path="/user/login" element={<Login />} />
             <Route path="/user/register" element={<Register />} />
