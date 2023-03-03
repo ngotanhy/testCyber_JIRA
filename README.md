@@ -29,7 +29,7 @@
 </ul>
 
 ## 4. Nếu được sắp vào khung giờ cố định thì công việc chính của bạn có ảnh hưởng đến việc mentor hay không ví dụ như OT ... 
-   <p>Không ảnh hưởng gì cả  </p>
+   <p>Hiện tại em Không ảnh hưởng gì cả </p>
 
 ## 5. Tại sao bạn apply công việc này ?
   <p> Em có thể chỉ dẫn các bạn biết thêm nhiều kiếm thức trong ngành mà em tự học được cũng như trung tâm đã giảng dạy.
