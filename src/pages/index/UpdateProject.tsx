@@ -2,6 +2,8 @@ import { Button, Form, Input, Select } from "antd";
 
 import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
+import { toast } from "react-toastify";
+import { toastOptionsErr, toastOptionsSuccess } from "../../App";
 import TinyMce from "../../components/TinyMce";
 import { useAppDispatch, useAppSelector } from "../../Hooks/HooksRedux";
 import {
@@ -45,11 +47,9 @@ function UpdateProject({}: Props) {
     values.id = Number(id);
     try {
       await apiUpdateProject(values, Number(id));
-      alert("update success");
+      toast.success("update success",toastOptionsSuccess)
     } catch (e) {
-      alert(
-        "update failure, you cannot update project ,because you are not allowed to participate "
-      );
+      toast.error("update failure, you cannot update project ,because you are not allowed to participate ",toastOptionsErr)
     }
   };
   const getProject = () => {
@@ -58,7 +58,6 @@ function UpdateProject({}: Props) {
 
   useEffect(() => {
     if (arrProject.length === 0) {
-      //get all user
       dispatch(getAllProjectManager());
     }
     getProject();

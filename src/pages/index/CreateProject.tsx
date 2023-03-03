@@ -1,10 +1,13 @@
 import { Button, Form, Input, Select } from "antd";
 import React, { useEffect, useRef, useState } from "react";
+import { toast } from "react-toastify";
+import { toastOptionsErr, toastOptionsSuccess } from "../../App";
 import TinyMce from "../../components/TinyMce";
-import { apiCreateProjectAuthorize, apiGetProjectCategory } from "../../utils/api/projectApi";
+import {
+  apiCreateProjectAuthorize,
+  apiGetProjectCategory,
+} from "../../utils/api/projectApi";
 import { Category, CreProject } from "../../utils/type/TypeProject";
-
-
 
 const { Option } = Select;
 
@@ -32,12 +35,12 @@ const CreateProject = ({}: Props) => {
     try {
       if (values.projectName !== " ") {
         await apiCreateProjectAuthorize(values);
-        alert("project created success");
+        toast.success("project created success", toastOptionsSuccess);
       } else {
-        alert("input project");
+        toast.error("input project name", toastOptionsErr);
       }
     } catch (e) {
-      alert("project failed");
+      toast.error("project failed", toastOptionsErr);
     }
   };
 

@@ -298,3 +298,17 @@ export interface ListTask {
 //   statusName
 //   : 
 //   "BACKLOG"}
+
+export type AddAssignTask = {
+  projectId: number;
+  taskName: string;
+  listUserAsign: {
+    userId: number;
+  }[];
+  taskId: number;
+};
+
+export type AssignTask = {
+  taskId: number;
+  userId: number;
+};

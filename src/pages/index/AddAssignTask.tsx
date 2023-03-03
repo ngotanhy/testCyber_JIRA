@@ -1,6 +1,8 @@
 import { Button, Form, Input, Select, TreeSelect } from "antd";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { toastOptionsErr, toastOptionsSuccess } from "../../App";
 import { useAppDispatch, useAppSelector } from "../../Hooks/HooksRedux";
 import {
   getAllProjectManager,
@@ -14,6 +16,8 @@ import {
 } from "../../utils/api/userApi";
 import { getStoreJSON, USER_LOGIN } from "../../utils/setting";
 import {
+  AddAssignTask,
+  AssignTask,
   ListTask,
   project,
   Status,
@@ -21,20 +25,6 @@ import {
   UpdTask,
 } from "../../utils/type/TypeProject";
 import { user } from "../../utils/type/TypeUser";
-
-type AddAssignTask = {
-  projectId: number;
-  taskName: string;
-  listUserAsign: {
-    userId: number;
-  }[];
-  taskId: number;
-};
-
-type AssignTask = {
-  taskId: number;
-  userId: number;
-};
 
 type Props = {};
 
@@ -87,12 +77,10 @@ export default function AddAssignTask({}: Props) {
 
   const onClickCallGetData = async (
     getItem: any,
-    message: string,
     nameItem: any
   ) => {
     if (nameItem.length == 0) {
       await dispatch(getItem);
-      alert("await loading " + message);
     }
   };
 
@@ -146,17 +134,15 @@ export default function AddAssignTask({}: Props) {
         );
         Promise.all(assignTask)
           .then((result) => {
-            console.log(result, "ok");
-            alert("success assign task")
+            toast.success("success assign task", toastOptionsSuccess);
           })
           .catch((err) => {
-            console.log("error: " + err);
+            toast.error("error", toastOptionsErr);
           });
       }
-
-      alert("AssignTask success");
+      toast.success("AssignTask success", toastOptionsSuccess);
     } catch (e) {
-      alert("AssignTask failed");
+      toast.error("AssignTask failed", toastOptionsErr);
     }
   };
 
@@ -190,7 +176,10 @@ export default function AddAssignTask({}: Props) {
                   await dispatch(
                     getProjectByUser(getStoreJSON(USER_LOGIN).content.id)
                   );
-                  alert("please create project for you");
+                  toast.error(
+                    "task failed , you can change task name",
+                    toastOptionsErr
+                  );
                 }
               }}
             >
@@ -212,7 +201,7 @@ export default function AddAssignTask({}: Props) {
             <Select
               className="w-full"
               onClick={() => {
-                onClickCallGetData(getAllStatus(), "status", status);
+                onClickCallGetData(getAllStatus(), status);
               }}
               onChange={(value) => {
                 handleGetArrTask(value);

@@ -70,6 +70,7 @@ export default function App({}: Props) {
             </Route>
             <Route path="/user/login" element={<Login />} />
             <Route path="/user/register" element={<Register />} />
+            <Route path="*" element={<Navigate to="/user/login" />} />
           </Routes>
         </HistoryRouter>
       </Suspense>

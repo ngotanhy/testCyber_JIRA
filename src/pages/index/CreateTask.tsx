@@ -21,6 +21,8 @@ import { CreTask, Priority, project, Status, TaskType } from "../../utils/type/T
 import { apiGetUserByProjectId } from "../../utils/api/userApi";
 import { apiCreateTask } from "../../utils/api/projectApi";
 import { Editor as TinyMCEEditor } from "tinymce";
+import { toast } from "react-toastify";
+import { toastOptionsErr, toastOptionsSuccess } from "../../App";
 
 const { SHOW_PARENT } = TreeSelect;
 const { Option } = Select;
@@ -88,9 +90,9 @@ export default function CreateTask({}: Props) {
           userId: values.listUserAsign[u],
         });
       }
-      alert("task created success");
+      toast.success("task created success",toastOptionsSuccess)
     } catch (e) {
-      alert("task failed , you can change task name");
+      toast.error("task failed , you can change task name",toastOptionsErr)
     }
   };
 
@@ -146,7 +148,7 @@ export default function CreateTask({}: Props) {
                   await dispatch(
                     getProjectByUser(getStoreJSON(USER_LOGIN).content.id)
                   );
-                  alert("please create project for you");
+                  toast.error("await",toastOptionsErr)
                 }
               }}
             >

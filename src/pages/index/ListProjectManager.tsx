@@ -18,6 +18,8 @@ import {
   apiRemoveUserFromProject,
 } from "../../utils/api/userApi";
 import { apiDeleteProject } from "../../utils/api/projectApi";
+import { toast } from "react-toastify";
+import { toastOptionsErr, toastOptionsSuccess } from "../../App";
 
 type Props = {};
 
@@ -84,22 +86,26 @@ export default function ListProjectManager({}: Props) {
     try {
       if (dataDelete) {
         await apiRemoveUserFromProject(dataDelete);
-        alert("deleted user success");
+        toast.success("deleted user success", toastOptionsSuccess);
         dispatch(getAllProjectManager());
       }
     } catch (e) {
-      alert("deleted user failed");
+      toast.error(
+        "deleted user failed",
+        toastOptionsErr
+      );
     }
   };
 
   const deleteProject = async (id: number) => {
     try {
       await apiDeleteProject(id);
-      alert("deleted project success");
+      toast.success("deleted user success", toastOptionsSuccess);
       await dispatch(setAllProject(id));
     } catch (e) {
-      alert(
-        "you cannot delete project,because you are not allowed to participate"
+      toast.error(
+        "you cannot delete project,because you are not allowed to participate",
+        toastOptionsErr
       );
     }
   };
@@ -180,13 +186,19 @@ export default function ListProjectManager({}: Props) {
                       try {
                         if (!checkMember) {
                           await apiAssignUserProject(data);
-                          alert("add user success");
+                          toast.success(
+                            "add user success",
+                            toastOptionsSuccess
+                          );
                           dispatch(getAllProjectManager());
                         } else {
-                          alert("users already have ");
+                          toast.error("users already have ", toastOptionsErr);
                         }
                       } catch (e) {
-                        alert("add user failed, project not for you");
+                        toast.error(
+                          "add user failed, project not for you ",
+                          toastOptionsErr
+                        );
                       }
                     }}
                   >

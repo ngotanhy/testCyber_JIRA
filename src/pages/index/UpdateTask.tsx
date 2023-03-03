@@ -16,6 +16,7 @@ import TinyMce from "../../components/TinyMce";
 import { useAppDispatch, useAppSelector } from "../../Hooks/HooksRedux";
 import { user } from "../../utils/type/TypeUser";
 import {
+  AssignTask,
   ListTask,
   Priority,
   project,
@@ -25,25 +26,16 @@ import {
   UpdTask,
 } from "../../utils/type/TypeProject";
 import { apiGetProjectDetail, apiUpdateTask } from "../../utils/api/projectApi";
-import { apiAddUserAssignTask, apiGetUserByProjectId } from "../../utils/api/userApi";
+import {
+  apiAddUserAssignTask,
+  apiGetUserByProjectId,
+} from "../../utils/api/userApi";
 import { Editor as TinyMCEEditor } from "tinymce";
+import { toast } from "react-toastify";
+import { toastOptionsErr, toastOptionsSuccess } from "../../App";
 
 const { SHOW_PARENT } = TreeSelect;
 const { Option } = Select;
-
-type AddAssignTask = {
-  projectId: number;
-  taskName: string;
-  listUserAsign: {
-    userId: number;
-  }[];
-  taskId: number;
-};
-
-type AssignTask = {
-  taskId: number;
-  userId: number;
-};
 
 type Props = {};
 
@@ -67,9 +59,8 @@ export default function UpdateTask({}: Props) {
   //get taskID
   const [lstTaskDeTail, setLstTaskDeTail] = useState<TaskDeTail[]>([]);
   const [lstDeTail, setDeTail] = useState<TaskDeTail[]>([]);
-
+  const [projectName, setProjectName] = useState<string>("");
   const [userAssign, setUserAssign] = useState<user[]>();
-
   const dispatch = useAppDispatch();
 
   //change list user for render
@@ -119,40 +110,38 @@ export default function UpdateTask({}: Props) {
       values = { ...values, statusId: Number(values.statusId) };
       try {
         let dataUser: AssignTask[] = [];
-      for (let u in values.listUserAsign) {
-        dataUser.push({
-          taskId: Number(values.taskId),
-          userId: Number(values.listUserAsign[u]),
-        });
-      }
-      if (dataUser.length > 0) {
-        let assignTask = dataUser.map(
-          (item) =>
-            new Promise((resolve, reject) => {
-              const api = apiAddUserAssignTask(item);
-              api.then((result) => {
-                resolve(result);
-              });
-            })
-        );
-        Promise.all(assignTask)
-          .then((result) => {
-            console.log(result, "ok");
-            alert("success assign task")
-          })
-          .catch((err) => {
-            console.log("error: " + err);
+        for (let u in values.listUserAsign) {
+          dataUser.push({
+            taskId: Number(values.taskId),
+            userId: Number(values.listUserAsign[u]),
           });
-      }
-
+        }
+        if (dataUser.length > 0) {
+          let assignTask = dataUser.map(
+            (item) =>
+              new Promise((resolve, reject) => {
+                const api = apiAddUserAssignTask(item);
+                api.then((result) => {
+                  resolve(result);
+                });
+              })
+          );
+          Promise.all(assignTask)
+            .then((result) => {
+              toast.success("success assign task", toastOptionsSuccess);
+            })
+            .catch((err) => {
+              toast.error("error", toastOptionsErr);
+            });
+        }
 
         await apiUpdateTask(values);
-        alert("update task  success");
+        toast.success("update task  success", toastOptionsSuccess);
       } catch (e) {
-        alert("task failed");
+        toast.error("task failed", toastOptionsErr);
       }
     } else {
-      alert("create task for the project");
+      toast.error("create task for the project", toastOptionsErr);
     }
   };
 
@@ -162,7 +151,7 @@ export default function UpdateTask({}: Props) {
       let ListTask: ListTask = dataDetail.data.content;
       setLstTaskDeTail(ListTask.lstTask);
     } catch (e) {
-      alert("error");
+      toast.error("error", toastOptionsErr);
     }
   };
 
@@ -209,10 +198,11 @@ export default function UpdateTask({}: Props) {
               className="w-full"
               defaultValue={projectByUserLogin[0]?.projectName}
               onChange={(value) => {
+                setProjectName(value);
                 getUserByProject(Number(value));
                 getListTask(Number(value));
               }}
-              onFocus={async () => {
+              onClick={async () => {
                 if (projectByUserLogin.length == 0) {
                   await dispatch(getAllProjectManager());
                   await dispatch(
@@ -221,7 +211,7 @@ export default function UpdateTask({}: Props) {
                   await dispatch(getALLPriority());
                   await dispatch(getAllStatus());
                   await dispatch(getAllTaskType());
-                  alert("await get Project for you");
+                  toast.error("await", toastOptionsErr);
                 }
               }}
             >
@@ -242,6 +232,7 @@ export default function UpdateTask({}: Props) {
           >
             <Select
               className="w-full"
+              disabled={projectName ? false : true}
               onChange={(value) => {
                 handleGetArrTask(value);
               }}
